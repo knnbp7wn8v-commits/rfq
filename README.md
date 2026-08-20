@@ -86,11 +86,17 @@ Az alkalmazás futtatásához szükséges környezeti változókat egy `.env` f�
 ```
 DB_HOST=<postgresql host>
 DB_PORT=5432
-DB_NAME=<adatbázis neve>
+DB_DATABASE=<adatbázis neve>
 DB_USER=<felhasználónév>
 DB_PASSWORD=<jelszó>
 SESSION_SECRET=<session titkosításhoz használt kulcs>
+APP_PORT=3000
 ```
+
+> Megjegyzés: a fenti lista korábban tévesen `DB_NAME` néven szerepeltette az
+> adatbázisnevet - az `app.js` ténylegesen a `DB_DATABASE` változót olvassa
+> (`process.env.DB_DATABASE`), ez lett javítva. Az `APP_PORT` opcionális,
+> alapértelmezetten 3000.
 
 Az alkalmazás indítása fejlesztői módban:
 
