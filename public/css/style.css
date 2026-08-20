@@ -1,0 +1,828 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600&display=swap');
+
+* {
+	font-family: 'Poppins', sans-serif;
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+	outline: none;
+	border: none;
+	text-decoration: none;
+}
+
+.container {
+	min-height: 100vh;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 20px;
+	padding-bottom: 60px;
+}
+
+.container .content {
+	text-align: center;
+}
+
+.container .content h3 {
+	font-size: 30px;
+	color: #333;
+}
+
+.container .content h3 span {
+	background: crimson;
+	color: #fff;
+	border-radius: 5px;
+	padding: 0 15px;
+}
+
+.container .content h1 {
+	font-size: 50px;
+	color: #333;
+}
+
+.container .content h1 span {
+	color: crimson;
+}
+
+.container .content p {
+	font-size: 25px;
+	margin-bottom: 20px;
+}
+
+.container .content .btn {
+	display: inline-block;
+	padding: 10px 30px;
+	font-size: 20px;
+	background: #333;
+	color: #fff;
+	margin: 0 5px;
+	text-transform: capitalize;
+}
+
+.container .content .btn:hover {
+	background: crimson;
+}
+
+.form-container {
+	min-height: 100vh;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 20px;
+	padding-bottom: 60px;
+	background: #eee;
+}
+
+.form-container form {
+	padding: 20px;
+	border-radius: 5px;
+	box-shadow: 0 5px 10px rgba(0, 0, 0, .1);
+	background: #fff;
+	text-align: center;
+	width: 500px;
+}
+
+.form-container form h3 {
+	font-size: 30px;
+	text-transform: uppercase;
+	margin-bottom: 10px;
+	color: #333;
+}
+
+.form-container form input,
+.form-container form select {
+	width: 100%;
+	padding: 10px 15px;
+	font-size: 17px;
+	margin: 8px 0;
+	background: #eee;
+	border-radius: 5px;
+}
+
+.form-container form select option {
+	background: #fff;
+}
+
+.form-container form .form-btn {
+	background: #fbd0d9;
+	color: crimson;
+	text-transform: capitalize;
+	font-size: 20px;
+	cursor: pointer;
+}
+
+.form-container form .form-btn:hover {
+	background: crimson;
+	color: #fff;
+}
+
+.form-container form p {
+	margin-top: 10px;
+	font-size: 20px;
+	color: #333;
+}
+
+.form-container form p a {
+	color: crimson;
+}
+
+.form-container form .error-msg {
+	margin: 10px 0;
+	display: block;
+	background: crimson;
+	color: #fff;
+	border-radius: 5px;
+	font-size: 20px;
+	padding: 10px;
+}
+
+/******************************************RFQ*********************************************/
+body {
+	background-color: #0a5e9d;
+}
+
+div {
+
+	/*-webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
+	border-radius: 10px;*/
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+	margin: 5px 5px 5px 5px;
+	padding: 5px 5px 5px 5px;
+	display: block;
+	clear: left;
+}
+
+.form-style-1,
+#requestsDiv {
+	margin: 10px 10px;
+	/*	max-width: 450px;*/
+	background-color: #0a5e9d;
+	font: 15px "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+	color: #ececec;
+}
+
+label {
+	margin: 0px 0 5px 0;
+	padding: 0px;
+	color: #ececec;
+	display: inline-block;
+	font: bold 14px "DaxWeb", Helvetica, Arial, sans-serif;
+}
+
+.title {
+	margin: 0px 0px -10px 10px;
+	padding: 15px 15px 15px 15px;
+	background-color: #0a5e9d;
+	color: #ececec;
+	font: bold 36px "DaxWeb", Helvetica, Arial, sans-serif;
+}
+
+button {
+	font: bold 16px "DaxWeb", Arial, Helvetica, sans-serif;
+	color: #fff;
+	background: #0a5e9d;
+	border: #fff 1px solid;
+	border-radius: 3px;
+	padding: 11px 24px;
+	-webkit-transition: all 0.5s ease;
+	-moz-transition: all 0.5s ease;
+	transition: all 0.5s ease;
+
+}
+
+button:hover {
+	font: bold 16px "DaxWeb", Arial, Helvetica, sans-serif;
+	color: #0a5e9d;
+	background: #fff;
+	border: none;
+	border-radius: 3px;
+	padding: 11px 24px;
+	-webkit-transition: all 0.5s ease;
+	-moz-transition: all 0.5s ease;
+	transition: all 0.5s ease;
+}
+
+.orderWeightNum_class {
+	margin-left: 10px !important;
+}
+
+.divTitle {
+	font: bold 18px "DaxWeb", Arial, Helvetica, sans-serif;
+	text-transform: uppercase;
+	color: #0a5e9d;
+	background: #fff;
+	display: inline-block;
+	width: 90%;
+	padding: 2px 0px 0px 10px;
+	margin-left: 15px;
+}
+
+.labelclass {
+	font: bold 20px "DaxWeb", Arial, Helvetica, sans-serif;
+}
+
+.selectlabel {
+	display: inline-block;
+	width: 130px;
+}
+
+.lblweight {
+	float: left;
+	margin-right: 20px;
+}
+
+.requestspan {
+	display: inline-block;
+	width: 180px;
+}
+
+.remdiv {
+	margin-left: -5px;
+	font: bold 18px "DaxWeb", Arial, Helvetica, sans-serif;
+	color: rgb(255, 153, 153);
+	cursor: pointer;
+}
+
+#emailDiv button {
+	float: left;
+	margin: 10px 10px 10px 10px;
+}
+
+.listrequestdiv {
+	width: 400px;
+}
+
+#p1_0 span {
+	display: block;
+	width: 100px;
+	float: left;
+}
+
+#p1_0 {
+	margin: 0px !important;
+}
+
+#paymentDiv input,
+label {
+	margin: 0px;
+}
+
+#p1_in {
+	margin-left: 10px !important;
+}
+
+#p2_in,
+#p3_in,
+#p4_in {
+	margin-left: 110px !important;
+}
+
+#tds_in2lbl,
+#tds_in1lbl,
+#tds_in1,
+#tds_in2 {
+	float: left;
+}
+
+#tds_div label {
+	font-size: 16px;
+}
+
+#tds_div {
+	padding-left: 50px;
+}
+
+.tds_comment {
+	display: inline-block;
+	width: 450px;
+	margin-left: 180px;
+	margin-top: -15px;
+	text-align: justify;
+}
+
+#tds_div div {
+	margin-left: -5px;
+}
+
+/* unvisited link */
+a:link {
+	color: white;
+}
+
+/* visited link */
+a:visited {
+	color: white;
+}
+
+/* mouse over link */
+a:hover {
+	color: red;
+}
+
+/* selected link */
+a:active {
+	color: blue;
+}
+
+#orderBut {
+	float: left;
+	margin: 20px 20px 20px 20px;
+	clear: both;
+}
+
+#heightOther {
+	display: inline-block;
+	margin-right: 10px;
+	float: left;
+	margin-top: 10px;
+}
+
+#reelsTag2 {
+	clear: both;
+	float: left;
+}
+
+#requestborder {
+	float: right;
+	margin-right: 10%;
+	margin-top: 20px;
+	font: bold 18px "DaxWeb", Arial, Helvetica, sans-serif;
+}
+
+select {
+	width: 100%;
+	max-width: 350px;
+	height: 35px;
+}
+
+#rak_table {
+	width: 100%;
+}
+
+.row1 {
+	width: 100%;
+}
+
+.td1 {
+	width: 350px;
+	max-width: 350px;
+	vertical-align: top;
+}
+
+.delivery1_class {
+	width: 200px;
+
+}
+
+.delivery2_class {
+	width: 100%;
+
+}
+
+.delivery2_class span,
+#companyDiv span {
+	width: 150px;
+	display: block;
+}
+
+#companyDiv {
+	float: initial;
+}
+
+.delivery2_class input,
+#companyDiv input {
+	height: 15px;
+	width: 300px;
+}
+
+input[type=text],
+input[type=date],
+input[type=datetime],
+input[type=number],
+input[type=search],
+input[type=time],
+input[type=url],
+input[type=email],
+textarea,
+select {
+
+	font: normal 15px "DaxWeb", Arial, Helvetica, sans-serif;
+	color: #555;
+	background: #ececec;
+	border: none;
+	padding: 9px 5px;
+	margin: 2px 0;
+}
+
+.form-style-1 input[type=text]:focus,
+.form-style-1 input[type=date]:focus,
+.form-style-1 input[type=datetime]:focus,
+.form-style-1 input[type=number]:focus,
+.form-style-1 input[type=search]:focus,
+.form-style-1 input[type=time]:focus,
+.form-style-1 input[type=url]:focus,
+.form-style-1 input[type=email]:focus,
+.form-style-1 textarea:focus,
+.form-style-1 select:focus {
+	-moz-box-shadow: 0 0 8px #88D5E9;
+	-webkit-box-shadow: 0 0 8px #88D5E9;
+	box-shadow: 0 0 8px #88D5E9;
+	border: 1px solid #88D5E9;
+}
+
+.form-style-1 .field-divided {
+	width: 49%;
+}
+
+.form-style-1 .field-long {
+	width: 100%;
+}
+
+.form-style-1 .field-select {
+	width: 100%;
+}
+
+.form-style-1 .field-textarea {
+	height: 100px;
+}
+
+.form-style-1 input[type=submit],
+.form-style-1 input[type=button] {
+	background: #4B99AD;
+	padding: 8px 0px 8px 0px;
+	border: none;
+	color: #fff;
+}
+
+.form-style-1 input[type=submit]:hover,
+.form-style-1 input[type=button]:hover {
+	background: #4691A4;
+	box-shadow: none;
+	-moz-box-shadow: none;
+	-webkit-box-shadow: none;
+}
+
+.form-style-1 .required {
+	color: red;
+}
+
+#container {
+	display: flex;
+}
+
+#div_1 {
+	flex: 1;
+	max-width: 400px;
+}
+
+#div_2 {
+	margin-left: 50px;
+	width: 100%;
+
+}
+#div_2a {
+    width: 100%;
+}
+
+#div_4 {
+	display: flex;
+}
+
+#div_4a {
+	flex: 4;
+}
+
+#div_4b {
+	flex: 5;
+}
+
+#c_data {
+	overflow: auto;
+
+}
+
+#portfolio, #profile_req {
+	font-family: Arial, Helvetica, sans-serif;
+	border-collapse: collapse;
+	width: 100%;
+	text-align: center;
+}
+
+#customers {
+	font-family: Arial, Helvetica, sans-serif;
+	border-collapse: collapse;
+	width: 100%;
+	font-size: 12px;
+}
+
+#c_details table {
+	font-family: Arial, Helvetica, sans-serif;
+	border-collapse: collapse;
+	width: 100%;
+	font-size: 12px;
+}
+
+#Customers {
+	flex-direction: column;
+}
+
+#request {
+	overflow: scroll;
+	font-family: Arial, Helvetica, sans-serif;
+	border-collapse: collapse;
+	width: 100%;
+	font-size: 11px;
+}
+
+#customers input, #request input {
+	width: 100px;
+	font-size: 12px;
+}
+
+#plie_params,
+#plies_del {
+	margin-left: -10px;
+}
+
+#portfolio td,
+#profile_req td,
+#profile_req th,
+#portfolio th #plie_params td,
+#plie_params th,
+#ediam_params td,
+#ediam_params th,
+#customers td,
+#customers th,
+#c_details table td,
+#c_details table th,
+#request td,
+#request th {
+	border: 1px solid #ddd;
+	padding: 8px;
+	vertical-align: top;
+}
+
+
+#portfolio tr:nth-child(even) {
+	background-color: #f2f2f2;
+}
+
+#portfolio tr:nth-child(odd) {
+	background-color: #fafafa;
+}
+
+#plie_params tr:nth-child(even) {
+	background-color: #f2f2f2;
+}
+
+#plie_params tr:nth-child(odd) {
+	background-color: #fafafa;
+}
+
+#ediam_params tr:nth-child(even) {
+	background-color: #f2f2f2;
+}
+
+#ediam_params tr:nth-child(odd) {
+	background-color: #fafafa;
+}
+
+#customers tr:nth-child(even) {
+	background-color: #f2f2f2;
+}
+
+#customers tr:nth-child(odd) {
+	background-color: #fafafa;
+}
+
+#c_details table tr:nth-child(even) {
+	background-color: #f2f2f2;
+}
+
+#c_details table tr:nth-child(odd) {
+	background-color: #fafafa;
+}
+
+#request tr:nth-child(even) {
+	background-color: #f2f2f2;
+}
+
+#request tr:nth-child(odd) {
+	background-color: #fafafa;
+}
+
+#profile_req tr:nth-child(even) {
+	background-color: #f2f2f2;
+}
+#profile_req tr:nth-child(odd) {
+	background-color: #fafafa;
+}
+
+#portfolio tr:hover,
+#profile_req tr:hover,
+#plie_params tr:hover,
+#ediam_params tr:hover,
+#customers tr:hover,
+#c_details table tr:hover,
+#request tr:hover {
+	background-color: #ddd;
+}
+
+
+#portfolio th,
+#profile_req th,
+#plie_params th,
+#ediam_params th,
+#customers th,
+#request th {
+	padding-top: 12px;
+	padding-bottom: 12px;
+	background-color: #04AA6D;
+	color: white;
+}
+
+.col1 {
+	width: 20%;
+}
+
+.col2 {
+	width: 80%;
+}
+
+.menu {
+	font-size: 18;
+	max-height: 80px;
+}
+
+.menu a {
+	margin: 10px 5px 0px 15px;
+}
+
+/* Style the tab */
+.tab {
+	overflow: hidden;
+	border: 1px solid #ccc;
+	background-color: #f1f1f1;
+	padding: 2px 1px 1px 1px !important;
+	max-height: 50px;
+}
+
+/* Style the buttons that are used to open the tab content */
+.tab button {
+	background-color: inherit;
+	float: left;
+	border: none;
+	outline: none;
+	cursor: pointer;
+	padding: 14px 16px;
+	transition: 0.3s;
+	color: #0a5e9d;
+	margin-left: 10px;
+}
+
+/* Change background color of buttons on hover */
+.tab button:hover {
+	background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+.tab button.active {
+	background-color: #ccc;
+}
+
+/* Style the tab content */
+.tabcontent {
+	display: none;
+	padding: 6px 12px;
+}
+
+#name {
+	float: right;
+	color: #0a5e9d;
+	padding: 10px 15px 5px 5px;
+}
+
+#others label {
+	margin-top: 10px;
+}
+
+.valid {
+	color: green;
+}
+
+.invalid {
+	color: red;
+}
+#update {
+	margin-top: 10px;
+}
+
+.message {
+	display: none;
+	padding: 10px;
+	margin: 10px 0;
+	border: 1px solid #ccc;
+	border-radius: 5px;
+	background-color: #f0f0f0;
+	position:fixed;
+    top:0;
+    width:100%;
+    z-index:100;
+}
+
+.success {
+	color: green;
+	border-color: green;
+	background-color: #e6ffe6;
+}
+.error {
+	color: red;
+	border-color: red;
+	background-color: #e6ffe6;
+}
+
+#password, #confirmPassword {
+	border: #333 1px solid;
+}
+
+.filter-bar {
+	display: flex;
+	gap: 10px;
+	margin-bottom: 20px;
+}
+.filter-bar select, .filter-bar button {
+	padding: 5px;
+	font-size: 14px;
+}
+.tabs {
+	display: flex;
+	gap: 15px;
+	margin-bottom: 20px;
+}
+.tabs a {
+	text-decoration: none;
+	padding: 10px 15px;
+	color: black;
+	border-bottom: 2px solid transparent;
+}
+.tabs a.active {
+	border-color: red;
+}
+svg {
+	color: white;
+	font-size: 16px !important;
+}
+/* Cookie figyelmeztető pop-up stílusai */
+#cookie-popup {
+	display: none;
+	/* Alapból rejtve van */
+	position: fixed;
+	bottom: 20px;
+	left: 20px;
+	right: 20px;
+	background-color: #fff;
+	border: 1px solid #ccc;
+	padding: 20px;
+	z-index: 1000;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+	font-family: Arial, sans-serif;
+	font-size: 14px;
+}
+
+#cookie-popup p {
+	margin: 0 0 10px 0;
+}
+
+#cookie-popup a {
+	color: #007bff;
+	text-decoration: none;
+}
+
+#cookie-popup a:hover {
+	text-decoration: underline;
+}
+
+#cookie-popup button {
+	background-color: #007bff;
+	border: none;
+	color: white;
+	padding: 10px 20px;
+	cursor: pointer;
+	font-size: 14px;
+	border-radius: 4px;
+}
+
+#cookie-popup button:hover {
+	background-color: #0056b3;
+}
+body {
+display: grid;
+min-height: 100vh;
+}
+
+.wrapper {
+padding: 20px;
+}

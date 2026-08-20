@@ -1,0 +1,105 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="css/style.css" />
+    <title>Request for Order</title>
+    <script>
+        var test = "<%= data %>";
+    </script>
+</head>
+
+<body>
+    <div class="wrapper">
+        <div class="menu">
+            <span><a href="">Home</a></span>
+            <span><a href="profile">Profile</a></span>
+            <% if (data.role_id==3 ) { %>
+                <span><a href="report">Report</a></span>
+                <% } else if (data.role_id==2) { %>
+                    <span><a href="report">Report</a></span>
+                    <% } %>
+                        <% if (data.role_id==3) { %>
+                            <span><a href="admin">Admin</a></span>
+                            <% } %>
+        </div>
+        <div class="title">
+            <span>Request for quotation</span>
+            <span id='requestborder' onclick='listrequest();'>
+                <span id='requests' class='requests'>Requests: </span>
+                <span id='requestsnr'>0</span>
+            </span>
+        </div>
+        <script src="assets/scripts/cart.js"></script>
+        <script src="assets/scripts/render.js"></script>
+        <script src="assets/scripts/common.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/emailjs-com@2.4.0/dist/email.min.js">
+        </script>
+        <div id="cookie-popup">
+            <p>
+                Az RFQ alkalmazás cookie-kat használ a felhasználói session létrehozásához és a jobb felhasználói élmény
+                érdekében.
+                További információért lásd a
+                <a href="/cookie-policy" >cookie kezelési tájékoztatót</a>.
+            </p>
+            <button id="cookie-accept">Elfogadom</button>
+        </div>
+        <!-- JavaScript kód a cookie kezeléshez -->
+        <script>
+            // Cookie beállítására szolgáló függvény
+            function setCookie(name, value, days) {
+                let expires = "";
+                if (days) {
+                    const date = new Date();
+                    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                    expires = "; expires=" + date.toUTCString();
+                }
+                document.cookie = name + "=" + (value || "") + expires + "; path=/";
+            }
+
+            // Cookie lekérésére szolgáló függvény
+            function getCookie(name) {
+                const nameEQ = name + "=";
+                const ca = document.cookie.split(';');
+                for (let i = 0; i < ca.length; i++) {
+                    let c = ca[i];
+                    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                    if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+                }
+                return null;
+            }
+
+            // Az oldal betöltésekor ellenőrizzük, hogy létezik-e a cookie, amely a felhasználó elfogadását jelzi
+            window.addEventListener('load', function () {
+                if (!getCookie("cookieConsent")) {
+                    document.getElementById("cookie-popup").style.display = "block";
+                }
+            });
+
+            // Elfogadás gomb eseménykezelője
+            document.getElementById("cookie-accept").addEventListener("click", function () {
+                setCookie("cookieConsent", "accepted", 30); // 30 napos érvényesség
+                document.getElementById("cookie-popup").style.display = "none";
+            });
+        </script>
+    </div>
+    <%- include('partials/footer') %>
+</body>
+<script>
+    // Függvény, amely frissíti a session időt a HTML oldalon
+    function updateSessionTime() {
+        fetch('/session-status')
+            .then(response => response.json())
+            .then(data => {
+                // Frissítjük a session időt a span elemben
+                document.getElementById('session-time').innerText = Math.floor(data.timeLeft) + ' seconds';
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    // Másodpercenként frissítjük az időt
+    //setInterval(updateSessionTime, 1100);
+</script>
+
+</html>

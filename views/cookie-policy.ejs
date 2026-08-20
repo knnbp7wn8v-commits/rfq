@@ -1,0 +1,60 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="css/style.css" />
+    <title>Request for Order</title>
+    <script src="assets/scripts/common.js"></script>
+</head>
+
+<body>
+    <div class="wrapper">
+        <div class="menu">
+            <span><a href="protected">Home</a></span>
+            <span><a href="profile">Profile</a></span>
+            <% if (data.role_id==3 ) { %>
+                <span><a href="report">Report</a></span>
+                <% } else if (data.role_id==2) { %>
+                    <span><a href="report">Report</a></span>
+                    <% } %>
+                        <% if (data.role_id==3) { %>
+                            <span><a href="admin">Admin</a></span>
+                            <% } %>
+        </div>
+  <h1>Cookie Kezelési Tájékoztató</h1>
+  <br>
+  <p>
+    Az RFQ alkalmazás cookie-kat használ a felhasználói élmény javítására és a session kezelésére. Az alkalmazás csak a szükséges cookie-kat állítja be,
+    de további információért kérjük, olvassa el a részletes tájékoztatót.
+  </p>
+
+<p><br>
+Az RFQ alkalmazás a felhasználói élmény javítása, a session kezelés és a szolgáltatások zavartalan működése érdekében cookie-kat használ. A cookie egy kisméretű szöveges adatfájl, amelyet a böngésző az eszközén tárol, és amely segít abban, hogy az alkalmazás "emlékezzen" bizonyos beállításokra és tevékenységekre.
+</p><br>
+<p>Az alkalmazás által használt cookie-k két fő kategóriába sorolhatók:</p><br>
+
+<p>Szükséges cookie-k
+Ezek a cookie-k nélkülözhetetlenek az alkalmazás alapvető működéséhez. Például a felhasználói session azonosítására, a bejelentkezés fenntartására és a biztonságos navigáció biztosítására szolgálnak. Ezeket a cookie-kat nem lehet letiltani, mert nélkülük az alkalmazás nem tud megfelelően működni.
+Opcionális cookie-k
+Ezek a cookie-k nem befolyásolják az alkalmazás alapvető működését, de hozzájárulnak a felhasználói élmény javításához. Ilyenek például az analitikai cookie-k, amelyek segítségével nyomon követjük az alkalmazás használatát, vagy azok a cookie-k, amelyek megjegyzik a felhasználói preferenciákat. Ezeket a cookie-kat a böngésződ beállításaiban módosíthatod vagy törölheted, de a letiltásuk bizonyos funkciók vagy szolgáltatások elérhetetlenségét okozhatja.
+Az RFQ alkalmazás a cookie-k segítségével az alábbi információkat gyűjtheti:
+</p><br>
+<p>
+Felhasználói session azonosítók a zavartalan működés érdekében
+Felhasználói preferenciák és beállítások, mint például a kijelző nyelv vagy egyéb személyre szabott elemek
+Statisztikai adatok az alkalmazás használatáról, melyek hozzájárulnak a szolgáltatás optimalizálásához
+Az itt gyűjtött adatok kizárólag az alkalmazás működésének javítására és a felhasználói élmény fokozására szolgálnak, és harmadik fél számára nem kerülnek továbbításra, kivéve, ha azt jogszabály előírja.
+</p><br>
+<p>
+Fontos tudni, hogy a cookie-kat a böngésződ beállításaiban módosíthatod vagy törölheted. Amennyiben a cookie-kat letiltod, előfordulhat, hogy egyes szolgáltatások vagy funkciók nem működnek megfelelően.
+</p><br>
+<p>
+Az RFQ alkalmazás használatával elfogadja a fentiekben ismertetett cookie-k alkalmazását. Ha kérdése van a cookie-k kezelésével vagy az adatok felhasználásával kapcsolatban, kérjük, forduljon ügyfélszolgálatunkhoz.
+</p><br>
+
+  <p><a href="/protected">Vissza a kezdőlapra</a></p>
+</div>
+<%- include('partials/footer') %>
+</body>
+</html>

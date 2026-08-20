@@ -1,0 +1,89 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="css/style.css" />
+    <title>Request for Order</title>
+    <script src="assets/scripts/common.js"></script>
+</head>
+
+<body>
+    <div class="wrapper">
+        <div class="menu">
+            <span><a href="protected">Home</a></span>
+            <span><a href="profile">Profile</a></span>
+            <% if (data.role_id==3 ) { %>
+                <span><a href="report">Report</a></span>
+                <% } else if (data.role_id==2) { %>
+                    <span><a href="report">Report</a></span>
+                    <% } %>
+                        <% if (data.role_id==3) { %>
+                            <span><a href="admin">Admin</a></span>
+                            <% } %>
+        </div>
+        <div>
+            <p>
+                <h1>ALKALMAZÁS ÁLTALÁNOS SZERZŐDÉSI FELTÉTELEI (ÁSZF)</h1>
+
+<p>
+    <h2>1. Bevezetés</h2><br><br><p style="margin-left: 10px;">
+    1.1. Jelen Általános Szerződési Feltételek (a továbbiakban: ÁSZF) szabályozzák a [RFQ Alkalmazás neve] (a továbbiakban: Alkalmazás) használatát, valamint a felhasználók (a továbbiakban: Felhasználó vagy Ön) és az üzemeltető (a továbbiakban: Szolgáltató) közötti jogviszonyt.<br>
+    1.2. Az Alkalmazás elérhetősége: [oldalcím, URL, stb.].<br>
+    1.3. Az ÁSZF elfogadásával Ön kijelenti, hogy elolvasta, megértette és elfogadja a jelen feltételeket.<br>
+</p><br></p>
+<p>
+<h2>2. Fogalommeghatározások</h2><br><br><p style="margin-left: 10px;">
+2.1. Felhasználó: Az a személy, aki regisztrál vagy belép az Alkalmazásba, és igénybe veszi a szolgáltatásait.<br>
+2.2. Szolgáltatás: Az Alkalmazás által nyújtott funkciók és szolgáltatások, ideértve az árajánlat-kérés, ajánlatok kezelése, felhasználói fiók működése, valamint egyéb kapcsolódó funkciók.<br>
+2.3. Cookie: Kisméretű, szöveges adatfájl, amelyet a böngésző tárol, és amely segít a Felhasználó azonosításában, valamint a személyre szabott szolgáltatások nyújtásában.<br>
+</p><br</p>
+<p>
+    <h2>3. A szolgáltatások leírása</h2><br><br><p style="margin-left: 10px;"></p><br>
+3.1. Az Alkalmazás lehetővé teszi a Felhasználók számára, hogy árajánlatokat kérjenek, ajánlatokat fogadjanak, illetve az ajánlatok kezelésével kapcsolatos egyéb funkciókat használjanak.<br>
+3.2. Az Alkalmazás működését a Szolgáltató fenntartja, beleértve a karbantartási munkálatokat, frissítéseket, valamint az esetleges szolgáltatásmegszakításokat.<br>
+</p><br</p>
+<p>
+    <h2>4. Felhasználói regisztráció és fiókkezelés</h2><br><br><p style="margin-left: 10px;"></p><br>
+4.1. A regisztráció során a Felhasználónak valós, pontos adatokat kell megadnia.<br>
+4.2. A Felhasználó köteles a fiókhoz tartozó belépési adatokat bizalmasan kezelni, és nem adhatja át harmadik félnek.<br>
+4.3. A Szolgáltató jogosult a Felhasználói fiók használatát felfüggeszteni vagy megszüntetni, amennyiben a Felhasználó megszegi a jelen ÁSZF-ben foglaltakat.<br>
+</p><br</p>
+<p>
+    <h2>5. Cookie-k és adatkezelés</h2><br><br><p style="margin-left: 10px;"></p><br>
+5.1. Az Alkalmazás cookie-kat használ a Felhasználó session kezeléséhez, valamint a felhasználói élmény javításához.<br>
+5.2. A cookie-k között szerepelnek a szükséges cookie-k, melyek az Alkalmazás alapfunkcióinak működéséhez elengedhetetlenek, valamint opcionális cookie-k, amelyek analitikai és személyre szabási célokat szolgálnak.<br>
+5.3. A Felhasználó a böngésző beállításain keresztül módosíthatja a cookie-k kezelését, de ez bizonyos funkciók elérhetetlenségét okozhatja. 5.4. A részletes cookie kezelési tájékoztató elérhető a [Cookie Tájékoztató oldalon] (pl. /cookie-policy.html).<br>
+</p><br</p>
+<p>
+    <h2>6. Fizetési feltételek és elszámolás</h2><br><br><p style="margin-left: 10px;"></p><br>
+6.1. Amennyiben az Alkalmazás fizetős szolgáltatásokat kínál, a fizetési feltételeket, árképzést, számlázást és visszatérítési szabályokat külön dokumentumban kell ismertetni, amely szintén a jelen ÁSZF részét képezi.<br>
+</p><br</p>
+<p>
+    <h2>7. Felelősség korlátozása</h2><br><br><p style="margin-left: 10px;"></p><br>
+7.1. A Szolgáltató nem vállal felelősséget az Alkalmazás használata során bekövetkező közvetlen vagy közvetett károkért, kivéve, ha az a törvény által meghatározott esetekben másként nem rendelkezik.<br>
+7.2. Az Alkalmazás működését befolyásoló, a Szolgáltató felett nem álló események (pl. természeti katasztrófák, hálózati problémák) esetén a Szolgáltató nem tehető felelőssé.<br>
+</p><br</p>
+<p>
+    <h2>8. Szerzői jogok és szellemi tulajdon</h2><br><br><p style="margin-left: 10px;"></p><br>
+8.1. Az Alkalmazásban található minden tartalom, grafika, szoftver és egyéb elemek a Szolgáltató tulajdonát képezik, illetve a megfelelő harmadik felek szerzői jogi védelem alatt állnak.<br>
+8.2. A Felhasználó kizárólag a Szolgáltató által engedélyezett módon használhatja fel a tartalmakat.<br>
+</p><br</p>
+<p>
+    <h2>9. Jogviták rendezése</h2><br><br><p style="margin-left: 10px;"></p><br>
+9.1. A jelen ÁSZF-ből eredő vitás kérdéseket a felek elsősorban békés úton, egyeztetés útján próbálják rendezni.<br>
+9.2. Amennyiben ez nem vezet eredményre, a vitát a [megfelelő bíróság megnevezése] illetékességi körébe tartozó bíróság elé lehet terjeszteni.<br>
+</p><br</p>
+<p>
+    <h2>10. Módosítások és egyéb rendelkezések</h2><br><br><p style="margin-left: 10px;"></p><br>
+10.1. A Szolgáltató jogosult a jelen ÁSZF-et egyoldalúan módosítani, a módosításokat a weboldalon közzétenni.<br>
+10.2. A módosítások azonnal hatályosak, amennyiben a Felhasználó a módosított feltételek elfogadásával folytatja az Alkalmazás használatát.<br>
+10.3. Jelen ÁSZF-re a magyar jog az irányadó.<br>
+</p><br</p>
+            </p>
+        </div>
+    </div>
+    <%- include('partials/footer') %>
+</body>
+
+</html>

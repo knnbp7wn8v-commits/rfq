@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" type="text/css" href="css/style.css" />
+<title>Register</title>
+</head>
+<body>
+    <div class="form-container">
+        <form action="/register" method="post">
+           <h3>register now</h3>
+           <input type="text" name="customer" id="customer" required placeholder="enter the company's name">
+           <input type="text" name="vat" id="vat" required placeholder="enter the VAT number">
+           <input type="text" name="name" id="name" required placeholder="enter the contact name">
+           <input type="email" name="email" id="email" required placeholder="enter your email">
+           <input type="tel" name="phone" id="phone" required placeholder="enter your phone number">
+           <input type="password" name="password" id="password" required placeholder="enter your password">
+           <input type="password" name="cpassword" id="cpassword" required placeholder="confirm your password">
+           <input type="submit" name="submit" id="submit" value="register now" class="form-btn">
+           <p>already have an account? <a href="login">login now</a></p>
+        </form>
+     
+     </div>
+</body>
+</html>

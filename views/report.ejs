@@ -1,0 +1,461 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="css/style.css" />
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <title>Request for Order</title>
+    <script src="assets/scripts/common.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/emailjs-com@2.4.0/dist/email.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+
+    </script>
+    <style>
+
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+    <div class="menu">
+        <span><a href="protected">Home</a></span>
+        <span><a href="">Profile</a></span>
+            <span><a href="report">Report</a></span>
+            <span><a href="admin">Admin</a></span>
+    </div>
+    <div class="filter-bar">
+        <select id="year" onchange="change(this.id)">
+            <option value="">Select</option>
+            <option value="2023">2023</option>
+            <option value="2024">2024</option>
+            <option value="2025">2025</option>
+        </select>
+        <select id="month" disabled onchange="change(this.id)">
+            <option value="">Select</option>
+            <option value="1">January</option>
+            <option value="2">February</option>
+            <option value="3">March</option>
+            <option value="4">April</option>
+            <option value="5">May</option>
+            <option value="6">June</option>
+            <option value="7">July</option>
+            <option value="8">August</option>
+            <option value="9">September</option>
+            <option value="10">October</option>
+            <option value="11">November</option>
+            <option value="12">December</option>
+        </select>
+        <select id="time" onchange="change(this.id)">
+            <option value="">select</option>
+            <option value="7 days">Last 7 days</option>
+            <option value="30 days">Last 30 days</option>
+            <option value="3 month">Last 3 month</option>
+            <option value="6 month">Last 6 month</option>
+            <option value="1 year">Last 1 years</option>
+        </select>
+        <select id="company" onchange="change(this.id)">
+            <option value="">Select</option>
+            <% data.rows.forEach(function(pr) { %>
+            <option value="<%= pr.customer_id %>"><%= pr.customer_name %></option>
+            <% }); %>
+        </select>
+        <select>
+            <option>Boston, MA</option>
+        </select>
+        <button>More</button>
+        <button>Update</button>
+    </div>
+    
+    <div class="tabs">
+        <a href="#" onclick="report1(this);" data-value="chart1">Termékigény Riport</a>
+        <a href="#" onclick="report2(this);" data-value="chart2">Rétegek és Papírsúly Riport</a>
+        <a href="#" onclick="report3(this);" data-value="chart3">Szállítási Igény Riport</a>
+        <a href="#" onclick="report4(this);" data-value="chart4">FSC Tanúsítvány Riport</a>
+        <a href="#" onclick="report5(this);" data-value="chart5">Trendek és Elemzések Riport</a>
+
+    </div>
+    <div id="tooltip" style="position: absolute; visibility: hidden; background: #f9f9f9; border: 1px solid #ccc; padding: 5px; border-radius: 4px;"></div>
+    <div id="chart">
+
+    </div>
+    <h1 style="margin-left: 50px" id="charttext"></h1>
+    <svg width="1024" height="800" style="margin-left: 50px" id="svgchart"></svg>
+    <script>
+        async function fetchData(cr) {
+            const chart = cr;
+            const year = document.getElementById("year").value;
+            const month = document.getElementById("month").value;
+            const time = document.getElementById("time").value;
+            const company = document.getElementById("company").value;
+            const response = await fetch('/api/report/{"chart":"' + chart + '", "year":"' + year + '", "month":"' + month + '", "time":"' + time +'", "company":"' + company + '"}');
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            return data;
+        }
+
+        async function createChart(chart, element) {
+            document.getElementById("svgchart").innerHTML = "";
+            const tabs = document.querySelectorAll('.tabs a');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            element.classList.add('active');
+
+            const data = await fetchData(chart);
+            const svg = d3.select("svg");
+            const margin = { top: 20, right: 30, bottom: 40, left: 40 };
+            const width = +svg.attr("width") - margin.left - margin.right;
+            const height = +svg.attr("height") - margin.top - margin.bottom;
+
+            if (!data || !Array.isArray(data) || data.length === 0) {
+                console.error('No valid data received for chart rendering.');
+                return;
+            }
+
+            let parsedData;
+
+            if (chart === "chart1") { // Oszlopdiagram a termékekhez
+                parsedData = data.map(d => ({
+                    productType: d.producttype,
+                    totalQuantity: Number(d.totalquantity)
+                }));
+                createBarChart(parsedData, svg, margin, width, height);
+            } else if (chart === "chart2") { // Oszlopdiagram a súlyokhoz
+                parsedData = data.map(d => ({
+                    weight: Number(d.weight),
+                    layers: d.layers,
+                    totalQuantity: Number(d.totalquantity)
+                }));
+                createWeightBarChart(parsedData, svg, margin, width, height);
+            } else if (chart === "chart3") { // Oszlopdiagram a heti igényekhez
+                parsedData = data.map(d => ({
+                    weeknum: d.weeknum,
+                    productType: d.producttype,
+                    totalQuantity: Number(d.totalquantity)
+                }));
+                createWeeklyBarChart(parsedData, svg, margin, width, height);
+            } else if (chart === "chart4") { // Kördiagram a tanúsítványokhoz
+                parsedData = data.map(d => ({
+                    certification: d.certification,
+                    totalQuantity: Number(d.totalquantity)
+                }));
+                createPieChart(parsedData, svg, width, height);
+            } else if (chart === "chart5") { // Vonaldiagram a havi mennyiségekhez
+                parsedData = data.map(d => ({
+                    year: d.year,
+                    month: d.month,
+                    totalQuantity: Number(d.totalquantity)
+                }));
+                createLineChart(parsedData, svg, margin, width, height);
+            } else {
+                console.error('Unknown chart type.');
+            }
+        }
+
+        // Oszlopdiagram a termékekhez
+        function createBarChart(data, svg, margin, width, height) {
+            const x = d3.scaleBand()
+                .domain(data.map(d => d.productType))
+                .range([0, width])
+                .padding(0.1);
+
+            const maxQuantity = d3.max(data, d => d.totalQuantity);
+            const y = d3.scaleLinear()
+                .domain([0, maxQuantity])
+                .nice()
+                .range([height, 0]);
+
+            const g = svg.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            g.append("g")
+                .attr("class", "x axis")
+                .attr("transform", `translate(0,${height})`)
+                .call(d3.axisBottom(x));
+
+            g.append("g")
+                .attr("class", "y axis")
+                .call(d3.axisLeft(y));
+
+            const tooltip = d3.select("#tooltip");
+
+            g.selectAll(".bar")
+                .data(data)
+                .enter().append("rect")
+                .attr("class", "bar")
+                .attr("x", d => x(d.productType))
+                .attr("y", d => y(d.totalQuantity))
+                .attr("width", x.bandwidth())
+                .attr("height", d => height - y(d.totalQuantity))
+                .attr("fill", d => d3.schemeCategory10[data.indexOf(d) % 10])
+                .on("mouseover", function(event, d) {
+                    tooltip.style("visibility", "visible")
+                        .text(`Total Quantity: ${d.totalQuantity}`);
+                })
+                .on("mousemove", function(event) {
+                    tooltip.style("top", (event.pageY - 10) + "px")
+                        .style("left", (event.pageX + 10) + "px");
+                })
+                .on("mouseout", function() {
+                    tooltip.style("visibility", "hidden");
+                });
+        }
+
+        // Oszlopdiagram a súlyokhoz
+        function createWeightBarChart(data, svg, margin, width, height) {
+            const x = d3.scaleBand()
+                .domain(data.map(d => `Weight: ${d.weight}, Layers: ${d.layers}`))
+                .range([0, width])
+                .padding(0.1);
+
+            const maxQuantity = d3.max(data, d => d.totalQuantity);
+            const y = d3.scaleLinear()
+                .domain([0, maxQuantity])
+                .nice()
+                .range([height, 0]);
+
+            const g = svg.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            g.append("g")
+                .attr("class", "x axis")
+                .attr("transform", `translate(0,${height})`)
+                .call(d3.axisBottom(x));
+
+            g.append("g")
+                .attr("class", "y axis")
+                .call(d3.axisLeft(y));
+
+            const tooltip = d3.select("#tooltip");
+
+            g.selectAll(".bar")
+                .data(data)
+                .enter().append("rect")
+                .attr("class", "bar")
+                .attr("x", d => x(`Weight: ${d.weight}, Layers: ${d.layers}`))
+                .attr("y", d => y(d.totalQuantity))
+                .attr("width", x.bandwidth())
+                .attr("height", d => height - y(d.totalQuantity))
+                .attr("fill", d => d3.schemeCategory10[data.indexOf(d) % 10])
+                .on("mouseover", function(event, d) {
+                    tooltip.style("visibility", "visible")
+                        .text(`Total Quantity: ${d.totalQuantity}`);
+                })
+                .on("mousemove", function(event) {
+                    tooltip.style("top", (event.pageY - 10) + "px")
+                        .style("left", (event.pageX + 10) + "px");
+                })
+                .on("mouseout", function() {
+                    tooltip.style("visibility", "hidden");
+                });
+        }
+
+        // Oszlopdiagram a heti igényekhez
+        function createWeeklyBarChart(data, svg, margin, width, height) {
+            const x = d3.scaleBand()
+                .domain(data.map(d => d.producttype))
+                .range([0, width])
+                .padding(0.1);
+
+            const maxQuantity = d3.max(data, d => d.totalQuantity);
+            const y = d3.scaleLinear()
+                .domain([0, maxQuantity])
+                .nice()
+                .range([height, 0]);
+
+            const g = svg.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            g.append("g")
+                .attr("class", "x axis")
+                .attr("transform", `translate(0,${height})`)
+                .call(d3.axisBottom(x));
+
+            g.append("g")
+                .attr("class", "y axis")
+                .call(d3.axisLeft(y));
+
+            const tooltip = d3.select("#tooltip");
+
+            g.selectAll(".bar")
+                .data(data)
+                .enter().append("rect")
+                .attr("class", "bar")
+                .attr("x", d => x(d.producttype))
+                .attr("y", d => y(d.totalquantity))
+                .attr("width", x.bandwidth())
+                .attr("height", d => height - y(d.totalquantity))
+                .attr("fill", d => d3.schemeCategory10[data.indexOf(d) % 10])
+                .on("mouseover", function(event, d) {
+                    tooltip.style("visibility", "visible")
+                        .text(`Total Quantity: ${d.totalquantity}`);
+                })
+                .on("mousemove", function(event) {
+                    tooltip.style("top", (event.pageY - 10) + "px")
+                        .style("left", (event.pageX + 10) + "px");
+                })
+                .on("mouseout", function() {
+                    tooltip.style("visibility", "hidden");
+                });
+        }
+
+        // Kördiagram
+        function createPieChart(data, svg, width, height) {
+            const radius = Math.min(width, height) / 2;
+
+            const g = svg.append("g")
+                .attr("transform", `translate(${width / 2},${height / 2})`);
+
+            const color = d3.scaleOrdinal(d3.schemeCategory10);
+
+            const pie = d3.pie()
+                .value(d => d.totalQuantity);
+
+            const arc = d3.arc()
+                .innerRadius(0)
+                .outerRadius(radius);
+
+            const arcs = g.selectAll(".arc")
+                .data(pie(data))
+                .enter().append("g")
+                .attr("class", "arc");
+
+            arcs.append("path")
+                .attr("d", arc)
+                .style("fill", d => color(d.data.certification));
+
+            arcs.append("text")
+                .attr("transform", d => `translate(${arc.centroid(d)})`)
+                .text(d => d.data.certification);
+
+            const tooltip = d3.select("#tooltip");
+
+            arcs.on("mouseover", function(event, d) {
+                tooltip.style("visibility", "visible")
+                    .text(`Certification: ${d.data.certification}, Total Quantity: ${d.data.totalQuantity}`);
+            })
+                .on("mousemove", function(event) {
+                    tooltip.style("top", (event.pageY - 10) + "px")
+                        .style("left", (event.pageX + 10) + "px");
+                })
+                .on("mouseout", function() {
+                    tooltip.style("visibility", "hidden");
+                });
+        }
+
+        // Vonaldiagram
+        function createLineChart(data, svg, margin, width, height) {
+            const x = d3.scaleBand()
+                .domain(data.map(d => `${d.year}-${d.month}`))
+                .range([0, width])
+                .padding(0.1);
+
+            const maxQuantity = d3.max(data, d => d.totalQuantity);
+            const y = d3.scaleLinear()
+                .domain([0, maxQuantity])
+                .nice()
+                .range([height, 0]);
+
+            const g = svg.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            g.append("g")
+                .attr("class", "x axis")
+                .attr("transform", `translate(0,${height})`)
+                .call(d3.axisBottom(x));
+
+            g.append("g")
+                .attr("class", "y axis")
+                .call(d3.axisLeft(y));
+
+            const line = d3.line()
+                .x(d => x(`${d.year}-${d.month}`))
+                .y(d => y(d.totalQuantity));
+
+            g.append("path")
+                .datum(data)
+                .attr("fill", "none")
+                .attr("stroke", "steelblue")
+                .attr("stroke-width", 1.5)
+                .attr("d", line);
+
+            const tooltip = d3.select("#tooltip");
+
+            g.selectAll(".dot")
+                .data(data)
+                .enter().append("circle")
+                .attr("class", "dot")
+                .attr("cx", d => x(`${d.year}-${d.month}`))
+                .attr("cy", d => y(d.totalQuantity))
+                .attr("r", 5)
+                .attr("fill", "steelblue")
+                .on("mouseover", function(event, d) {
+                    tooltip.style("visibility", "visible")
+                        .text(`Total Quantity: ${d.totalQuantity}`);
+                })
+                .on("mousemove", function(event) {
+                    tooltip.style("top", (event.pageY - 10) + "px")
+                        .style("left", (event.pageX + 10) + "px");
+                })
+                .on("mouseout", function() {
+                    tooltip.style("visibility", "hidden");
+                });
+        }
+
+        function report1(ele) {
+            document.getElementById("charttext").innerHTML = "Termékigény Riport";
+            createChart("chart1", ele);
+        }
+        function report2(ele) {
+            document.getElementById("charttext").innerHTML = "Rétegek és Papírsúly Riport";
+            createChart("chart2", ele);
+        }
+        function report3(ele) {
+            document.getElementById("charttext").innerHTML = "Szállítási Igény Riport";
+            createChart("chart3", ele);
+        }
+        function report4(ele) {
+            document.getElementById("charttext").innerHTML = "FSC Tanúsítvány Riport";
+            createChart("chart4", ele);
+        }
+        function report5(ele) {
+            document.getElementById("charttext").innerHTML = "Trendek és Elemzések Riport";
+            createChart("chart5", ele);
+        }
+        function change(id) {
+            if (id === "year") {
+                if (document.getElementById(id).value !== "") {
+                    document.getElementById("month").removeAttribute("disabled");
+                    document.getElementById("time").setAttribute("disabled", "disabled");
+                } else {
+                    document.getElementById("month").setAttribute("disabled", "disabled");
+                    document.getElementById("time").setAttribute("disabled", "disabled");
+                    document.getElementById("time").removeAttribute("disabled");
+                }
+            } else if (id === "time") {
+                if (document.getElementById(id).value !== "") {
+                    document.getElementById("year").setAttribute("disabled", "disabled");
+                    document.getElementById("month").setAttribute("disabled", "disabled");
+                } else {
+                    document.getElementById("month").setAttribute("disabled", "disabled");
+                    document.getElementById("year").removeAttribute("disabled");
+                }
+            }
+            const tabs = document.querySelectorAll('.tabs a');
+            tabs.forEach(tab => {
+                if (tab.classList.contains('active')) {
+                    const cval = tab.getAttribute('data-value');
+                    createChart(cval, tab);
+                }
+            });
+        }
+    </script>
+    </div>
+    <%- include('partials/footer') %>
+</body>
+
+
+</html>

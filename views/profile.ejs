@@ -1,0 +1,190 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="css/style.css" />
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <title>Request for Order</title>
+    <script src="assets/scripts/common.js"></script>
+    <style>
+        select {
+            height: auto !important;
+        }
+        input {
+            width: 300px;
+            height: 24pt;
+        }
+    </style>
+</head>
+
+<body>
+<div class="wrapper">
+<div class="menu">
+    <span><a href="protected">Home</a></span>
+    <span><a href="profile">Profile</a></span>
+    <% if (data[0].rows[0].role_id==3 ) { %>
+        <span><a href="report">Report</a></span>
+    <% } else if (data[0].rows[0].role_id==2) { %>
+        <span><a href="report">Report</a></span>
+    <% } %>
+
+
+    <% if (data[0].rows[0].role_id==3) { %>
+        <span><a href="admin">Admin</a></span>
+    <% } else { %>
+
+    <% } %>
+</div>
+<div class="tab">
+    <button class="tablinks" onclick="openTab(event, 'Overview')">Overview</button>
+    <button class="tablinks" onclick="openTab(event, 'Requests')">Requests</button>
+    <span id="name">Welcome back: <%= data[0].rows[0].customer_name %></span>
+</div>
+<div id="Overview" class="tabcontent" style="display: flex !important; flex-direction: column">
+    <h1>Profile</h1>
+    <table>
+        <tbody>
+        <tr>
+            <td class="label">Company Name:</td>
+            <td><input id="p1" type="text" value="<%= data[0].rows[0].customer_name %>" /></td>
+        </tr>
+        <tr>
+            <td class="label">VAT number:</td>
+            <td><input id="p2" type="text" value="<%= data[0].rows[0].vat_number %>" /></td>
+        </tr>
+        <tr>
+            <td class="label">Contact Name:</td>
+            <td><input id="p3" type="text" value="<%= data[0].rows[0].contact_name %>" /></td>
+        </tr>
+        <tr>
+            <td class="label">Email:</td>
+            <td><input id="p4" type="email" value="<%= data[0].rows[0].email %>" /></td>
+        </tr>
+        <tr>
+            <td class="label">Phone Number:</td>
+            <td><input id="p5" type="text" value="<%= data[0].rows[0].phone %>" /></td>
+        </tr>
+        <tr>
+            <td class="label">Country:</td>
+            <% if (data[1].rows[0]) { %>
+            <td><input id="p6" type="text" value="<%= data[1].rows[0].country %>" /></td>
+            <% } else { %>
+                <td><input id="p6" type="text" value="" /></td>
+            <% } %>
+        </tr>
+        <tr>
+            <td class="label">City:</td>
+            <% if (data[1].rows[0]) { %>
+            <td><input id="p7" type="text" value="<%= data[1].rows[0].city %>" /></td>
+            <% } else { %>
+            <td><input id="p7" type="text" value="" /></td>
+            <% } %>
+        </tr>
+        <tr>
+            <td class="label">Postal codes:</td>
+            <% if (data[1].rows[0]) { %>
+            <td><input id="p8" type="text" value="<%= data[1].rows[0].postal_code %>" /></td>
+            <% } else { %>
+                <td><input id="p8" type="text" value="" /></td>
+            <% } %>
+        </tr>
+        <tr>
+            <td class="label">Address:</td>
+            <% if (data[1].rows[0]) { %>
+            <td><input id="p9" type="text" value="<%= data[1].rows[0].address %>" /></td>
+            <% } else { %>
+            <td><input id="p9" type="text" value="" /></td>
+            <% } %>
+        </tr>
+        </tbody>
+    </table>
+    <button id="update" type="button" style="width: 200px" onclick="profile_update(<%= data[0].rows[0].customer_id%>) %>">Update</button>
+</div>
+<div id="Requests" class="tabcontent">
+    <% console.log(data[2].rows[0].tissue) %>
+    <table id="profile_req">
+        <tbody>
+        <tr>
+            <th>Tissue</th>
+            <th>Plies</th>
+            <th>Grammatura</th>
+            <th>Diameter</th>
+            <th>Reels</th>
+            <th>Quotatient</th>
+            <th>Ordered Weight</th>
+            <th>Ediameter</th>
+            <th>Certification</th>
+            <th>Requested Week Number</th>
+            <th>Comment</th>
+            <th>Requested Date
+            </th>
+        </tr>
+        <% data[2].rows.forEach(function(pr) { %>
+        <tr>
+            <td><%= pr.tissue %></td>
+            <td><%= pr.plies %></td>
+            <td><%= pr.grammatura %></td>
+            <td><%= pr.diameter %></td>
+            <td><%= pr.reels %></td>
+            <td><%= pr.quotatient %></td>
+            <td><%= pr.orderweight %></td>
+            <td><%= pr.ediameter %></td>
+            <td><%= pr.cerification %></td>
+            <td><%= pr.weeknum %></td>
+            <td><%= pr._comment %></td>
+            <td><%= pr.requestdate.toLocaleDateString('hu-HU', { year: 'numeric' , month: '2-digit' ,
+                    day: '2-digit' }); %></td>
+        </tr>
+        <% }); %>
+        </tbody>
+    </table>
+</div>
+<div id="message" class="message"></div>
+</div>
+<%- include('partials/footer') %>
+</body>
+
+<script>
+    function profile_update(id) {
+        const company = document.getElementById("p1").value;
+        const vat = document.getElementById("p2").value;
+        const c_name = document.getElementById("p3").value;
+        const email = document.getElementById("p4").value;
+        const phone = document.getElementById("p5").value;
+        const country = document.getElementById("p6").value;
+        const city = document.getElementById("p7").value;
+        const postal = document.getElementById("p8").value;
+        const address = document.getElementById("p9").value;
+        const u_id = id;
+        const data = {
+            head: "profile_update",
+            data: {
+                id: u_id,
+                company: company,
+                vat: vat,
+                c_name: c_name,
+                email: email,
+                phone: phone,
+                country: country,
+                city: city,
+                postal: postal,
+                address: address
+            }
+        };
+        fetch('/users', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        }).then(response => response.json())
+            .then(data => {
+                showMessage(data.message, data.status);
+
+            })
+            .catch(error => console.error('Error:', error));
+
+    }
+</script>
+</html>

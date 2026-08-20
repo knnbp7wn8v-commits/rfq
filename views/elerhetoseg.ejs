@@ -1,0 +1,210 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="css/style.css" />
+    <title>Request for Order</title>
+    <script src="assets/scripts/common.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/emailjs-com@2.4.0/dist/email.min.js"></script>
+    <script type="text/javascript">
+        // Inicializáljuk az EmailJS-t
+        (function () {
+          emailjs.init("2IULQU1dR18iim7yH"); // Az EmailJS user ID (titkosítva ajánlott, de itt mint minta szerepel)
+        })();
+      </script>
+</head>
+<style>
+    .contact-form {
+      background-color: #fff;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .contact-form h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .contact-form label {
+      display: block;
+      margin: 10px 0 5px;
+    }
+    .contact-form input[type="text"],
+    .contact-form input[type="email"],
+    .contact-form textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    .contact-form textarea {
+      resize: vertical;
+      min-height: 150px;
+    }
+    .contact-form button {
+      display: block;
+      width: 100%;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      padding: 12px;
+      margin-top: 20px;
+      font-size: 16px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .contact-form button:hover {
+      background-color: #0056b3;
+    }
+    .error {
+      color: red;
+      font-size: 14px;
+      margin-top: 5px;
+    }
+    .success {
+      color: green;
+      font-size: 16px;
+      text-align: center;
+      margin-top: 20px;
+    }
+</style>
+<body>
+    <div class="wrapper">
+        <div class="menu">
+            <span><a href="protected">Home</a></span>
+            <span><a href="profile">Profile</a></span>
+            <% if (data.role_id==3 ) { %>
+                <span><a href="report">Report</a></span>
+                <% } else if (data.role_id==2) { %>
+                    <span><a href="report">Report</a></span>
+                    <% } %>
+                        <% if (data.role_id==3) { %>
+                            <span><a href="admin">Admin</a></span>
+                            <% } %>
+        </div>
+        <div class="contact-form">
+            <h2>Kapcsolatfelvétel</h2>
+            <form id="contactForm">
+              <label for="name">Név:</label>
+              <input type="text" id="name" name="name" placeholder="Add meg a neved">
+              <div id="nameError" class="error"></div>
+              
+              <label for="email">E-mail:</label>
+              <input type="email" id="email" name="email" placeholder="Add meg az e-mailed">
+              <div id="emailError" class="error"></div>
+              
+              <label for="subject">Tárgy:</label>
+              <input type="text" id="subject" name="subject" placeholder="Üzeneted tárgya">
+              <div id="subjectError" class="error"></div>
+              
+              <label for="message">Üzenet:</label>
+              <textarea id="message" name="message" placeholder="Írd meg az üzeneted"></textarea>
+              <div id="messageError" class="error"></div>
+              
+              <button type="submit">Elküld</button>
+            </form>
+            <div id="formSuccess" class="success"></div>
+          </div>
+    </div>
+    <%- include('partials/footer') %>
+</body>
+<script>
+    document.getElementById('contactForm').addEventListener('submit', function(event) {
+      event.preventDefault(); // Megakadályozza a form alapértelmezett beküldését
+      
+      // Hibaüzenetek törlése
+      document.getElementById('nameError').textContent = '';
+      document.getElementById('emailError').textContent = '';
+      document.getElementById('subjectError').textContent = '';
+      document.getElementById('messageError').textContent = '';
+      document.getElementById('formSuccess').textContent = '';
+
+      // Értékek lekérése
+      var name = document.getElementById('name').value.trim();
+      var email = document.getElementById('email').value.trim();
+      var subject = document.getElementById('subject').value.trim();
+      var message = document.getElementById('message').value.trim();
+      
+      var valid = true;
+
+      // Egyszerű validáció
+      if (name === "") {
+        document.getElementById('nameError').textContent = 'Kérjük, add meg a neved!';
+        valid = false;
+      }
+      if (email === "") {
+        document.getElementById('emailError').textContent = 'Kérjük, add meg az e-mailed!';
+        valid = false;
+      } else {
+        // Egyszerű e-mail formátum validáció
+        var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailPattern.test(email)) {
+          document.getElementById('emailError').textContent = 'Érvénytelen e-mail cím!';
+          valid = false;
+        }
+      }
+      if (subject === "") {
+        document.getElementById('subjectError').textContent = 'Kérjük, add meg a tárgyat!';
+        valid = false;
+      }
+      if (message === "") {
+        document.getElementById('messageError').textContent = 'Kérjük, írd meg az üzeneted!';
+        valid = false;
+      }
+
+      if (valid) {
+        var templateParams = {
+          from_name: name,
+          from_email: email,
+          subject: subject,
+          message: message
+        };
+
+        // EmailJS üzenetküldés
+        emailjs.send('service_9uys485', 'template_h0xh1qd', templateParams)
+          .then(function(response) {
+              document.getElementById('formSuccess').textContent = 'Üzeneted sikeresen elküldve!';
+              document.getElementById('contactForm').reset();
+              //showMessage('Sikeres üzenetküldés: ' + response.status + " " + response.text, 'success');
+          }, function(error) {
+            showMessage('Hiba történt az üzenetküldés során:', error)
+              document.getElementById('formSuccess').textContent = 'Hiba történt az üzenetküldés során!';
+          });
+        // Itt történhet az adatküldés például AJAX segítségével
+        // Példa: az alábbi kóddal elküldheted a form adatait egy szerver endpoint-ra
+
+        // var formData = {
+        //   name: name,
+        //   email: email,
+        //   subject: subject,
+        //   message: message
+        // };
+
+        // fetch('/contact', {
+        //   method: 'POST',
+        //   headers: {
+        //     'Content-Type': 'application/json'
+        //   },
+        //   body: JSON.stringify(formData)
+        // })
+        // .then(response => response.json())
+        // .then(data => {
+        //   document.getElementById('formSuccess').textContent = 'Üzeneted sikeresen elküldve!';
+        // })
+        // .catch(error => {
+        //   console.error('Hiba történt:', error);
+        // });
+
+        // Jelenlegi példában csak sikeres visszajelzést jelenítünk meg
+        document.getElementById('formSuccess').textContent = 'Üzeneted sikeresen elküldve!';
+        // A form mezők törlése
+        document.getElementById('contactForm').reset();
+      }
+    });
+  </script>
+
+
+</html>

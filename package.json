@@ -1,0 +1,41 @@
+{
+  "name": "rfq-aws-app",
+  "version": "0.1",
+  "description": "Request for quota application",
+  "private": true,
+  "scripts": {
+    "start": "node app.js"
+  },
+
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.2",
+    "connect-flash": "^0.1.1",
+    "cookie-parser": "^1.4.6",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.9",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "faker": "^5.5.3",
+    "jsonwebtoken": "^9.0.2",
+    "nodemon": "^3.1.1",
+    "passport": "^0.7.0",
+    "passport-local": "^1.0.0",
+    "pg": "^8.11.3",
+    "sessionstore": "^1.2.18"
+  },
+
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/istvanbodnar/rfq.git"
+  },
+  "author": "Bodnár István",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/istvanbodnar/rfq/issues"
+  },
+  "homepage": "https://github.com/istvanbodnar/rfq#readme",
+  "devDependencies": {
+    "@faker-js/faker": "^9.0.3"
+  }
+}

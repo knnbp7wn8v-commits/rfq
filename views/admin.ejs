@@ -1,0 +1,729 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="css/style.css" />
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <title>Request for Order</title>
+    <script src="assets/scripts/admin.js"></script>
+    <script src="assets/scripts/common.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/emailjs-com@2.4.0/dist/email.min.js"></script>
+    <script>
+        var test = "<%= data[11].rows[0].customer_id %>";
+    </script>
+    <style>
+        select {
+            height: auto !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+    <div class="menu">
+        <span><a href="protected">Home</a></span>
+        <span><a href="profile">Profile</a></span>
+        <% if (data[11].rows[0].role_id==3 ) { %>
+            <span><a href="report">Report</a></span>
+            <% } else if (data[11].rows[0].role_id==2) { %>
+                <span><a href="report">Report</a></span>
+                <% } %>
+        
+        
+        <% if (data[11].rows[0].role_id==3) { %>
+            <span><a href="admin">Admin</a></span>
+            <% } else { %>
+
+                <% } %>
+    </div>
+    <div class="tab">
+        <button class="tablinks" onclick="openTab(event, 'Portfolios')">Portfolio</button>
+        <button class="tablinks" onclick="openTab(event, 'Parameters')">Parameters</button>
+        <button class="tablinks" onclick="openTab(event, 'Others')">Others</button>
+        <button class="tablinks" onclick="openTab(event, 'Customers')">Customers</button>
+        <button class="tablinks" onclick="openTab(event, 'Requests')">Requests</button>
+        <button class="tablinks" onclick="openTab(event, 'Test')">Test</button>
+        <span id="name">Welcome back: <%= data[11].rows[0].customer_name %></span>
+    </div>
+    <div id="Portfolios" class="tabcontent" style="display: flex !important;">
+        <div id="div_1">
+            <label class="labelclass selectlabel">Tissues</label>
+            <select id="tissues" size="5">
+                <% data[0].rows.forEach(function(tissue) { %>
+                    <option value="<%= tissue.tissue %>">
+                        <%= tissue.tissue %>
+                    </option>
+                    <% }); %>
+            </select><br>
+            <label class="labelclass selectlabel">Reels</label>
+            <select id="reels" multiple size="10">
+                <% data[2].rows.forEach(function(r) { %>
+                    <option value="<%= r.reels %>">
+                        <%= r.reels %>
+                    </option>
+                    <% }); %>
+            </select><br>
+            <label class="labelclass selectlabel">Grammatura</label>
+            <select id="grammatura" multiple size="10">
+                <% data[1].rows.forEach(function(gr) { %>
+                    <option value="<%= gr.grammatura %>">
+                        <%= gr.grammatura %> gsm
+                    </option>
+                    <% }); %>
+            </select><br>
+            <button id="tissue_add" class="add">Add</button>
+        </div>
+        <div id="div_2">
+            <div id="div_2a">
+                <label class="labelclass">Portfolio (<span id="portfolio_nr">
+                        <%= data[3].rowCount %>
+                    </span>)</label>
+                <table id="portfolio">
+                    <thead>
+                    <tr>
+                        <th>Select All<br><input type="checkbox" id="selectall" value="portfolio"
+                                onchange="selectall(this)" /></th>
+                        <th>Tissue<br><input type="search" id="s1" name="q" placeholder="Tissue filter"
+                                aria-label="Search through site content" /></th>
+                        <th>Reel<br><input type="search" id="s2" name="q" placeholder="Reel filter"
+                                aria-label="Search through site content" /></th>
+                        <th>Grammatura<br><input type="search" id="s3" name="q" placeholder="Grammatura filter"
+                                aria-label="Search through site content" /></th>
+                    </tr>
+                </thead>
+                    <% data[3].rows.forEach(function(pr) { %>
+                        <tr>
+                            <td><input type="checkbox" id="<%= pr.id %>" /></td>
+                            <td>
+                                <%= pr.tissue %>
+                            </td>
+                            <td>
+                                <%= pr.reel %> cm
+                            </td>
+                            <td>
+                                <%= pr.grammatura %> gsm
+                            </td>
+                        </tr>
+                        <% }); %>
+                </table>
+            </div>
+            <div id="div_2b">
+                <button id="btn2" class="del">Delete</button>
+            </div>
+        </div>
+        <!-- Lapozó vezérlők -->
+    <div id="pagination-controls" style="text-align: center; margin-top: 10px;">
+        <button id="prev-page">Előző</button>
+        <span id="page-info" style="margin: 0 15px;"></span>
+        <button id="next-page">Következő</button>
+      </div>
+    </div>
+    </div>
+    <div id="Parameters" class="tabcontent">
+        <div id="div_3">
+            <div id="div_3a">
+                <label class="labelclass">Plies and diameters</label>
+                <select id="plies" size="5">
+                    <% data[4].rows.forEach(function(pl) { %>
+                        <option value="<%= pl.plie %>">
+                            <%= pl.plie %>
+                        </option>
+                        <% }); %>
+                </select>
+                <br> <br>
+                <select id="diameter" size="4" multiple>
+                    <% data[5].rows.forEach(function(d) { %>
+                        <option value="<%= d.diameter %>">
+                            <%= d.diameter %> cm
+                        </option>
+                        <% }); %>
+                </select><br>
+                <button id="plies_add" class="add">Add</button>
+            </div>
+            <div id="div_3b">
+                <div id="div_3b1">
+                    <table id="plie_params">
+                        <tr>
+                            <th>Select All<br><input type="checkbox" id="selectall" value="plie_params"
+                                    onchange="selectall(this)" /></th>
+                            <th>Plie</th>
+                            <th>Diameter</th>
+                        </tr>
+                        <% data[6].rows.forEach(function(plp) { %>
+                            <tr>
+                                <td><input type="checkbox" id="<%= plp.id %>" /></td>
+                                <td>
+                                    <%= plp.plie %>
+                                </td>
+                                <td>
+                                    <%= plp.diameter %> cm
+                                </td>
+                            </tr>
+                            <% }); %>
+                    </table>
+                </div>
+                <div id="div_3b2">
+                    <button id="plies_del" class="del">Delete</button>
+                </div>
+            </div>
+        </div>
+        <div id="div_4">
+            <div id="div_4a">
+                <label class="labelclass">External diameter</label>
+                <label class="labelclass">Height</label>
+                <select id="height" size="5">
+                    <% data[7].rows.forEach(function(h) { %>
+                        <option value="<%= h.eheight %>">
+                            <%= h.eheight %> cm
+                        </option>
+                        <% }); %>
+                </select>
+                <br>
+                <label class="labelclass">Trucks</label>
+                <select id="truck" size="5" multiple>
+                    <% data[8].rows.forEach(function(t) { %>
+                        <option value="<%= t.truck %>">
+                            <%= t.truck %>
+                        </option>
+                        <% }); %>
+                </select>
+                <br>
+                <label class="labelclass">Tissues</label>
+                <select id="tissues2" size="5">
+                    <% data[0].rows.forEach(function(tissue) { %>
+                        <option value="<%= tissue.tissue %>">
+                            <%= tissue.tissue %>
+                        </option>
+                        <% }); %>
+                </select><br>
+                <label class="labelclass">Weight</label>
+                <select id="weight" size="5" multiple>
+                    <% data[9].rows.forEach(function(w) { %>
+                        <option value="<%= w.weight %>">
+                            <%= w.weight %> kg
+                        </option>
+                        <% }); %>
+                </select>
+                <br>
+                <button id="ediamater_add" class="add">Add</button>
+            </div>
+            <div id="div_4b">
+                <div id="div_4b1">
+                    <table id="ediam_params">
+                        <tr>
+                            <th>Select All<br><input type="checkbox" id="selectall" value="ediam_params"
+                                    onchange="selectall(this)" /></th>
+                            <th>Height</th>
+                            <th>Trucks</th>
+                            <th>Tissue</th>
+                            <th>Weight</th>
+                        </tr>
+                        <% data[10].rows.forEach(function(ed) { %>
+                            <tr>
+                                <td><input type="checkbox" id="<%= ed.id %>" /></td>
+                                <td>
+                                    <%= ed.eheight %> cm
+                                </td>
+                                <td>
+                                    <%= ed.truck %>
+                                </td>
+                                <td>
+                                    <%= ed.tissue %>
+                                </td>
+                                <td>
+                                    <%= ed.weight %> kg
+                                </td>
+                            </tr>
+                            <% }); %>
+                    </table>
+                </div>
+                <div id="div_4b2">
+                    <button id="ediam_del" class="del">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="Others" class="tabcontent">
+        <div id="div_o_1">
+            <label class="labelclass selectlabel">Tissues</label>
+            <select id="o_tissues" size="5">
+                <% data[0].rows.forEach(function(tissue) { %>
+                    <option value="<%= tissue.tissue %>">
+                        <%= tissue.tissue %>
+                    </option>
+                    <% }); %>
+            </select><br>
+            <button id="o_tis_add" class="oadd">Add</button>
+            <button id="o_tis_del" class="odel">Delete</button>
+            <br>
+            <label class="labelclass selectlabel">Reels</label>
+            <select id="o_reels" multiple size="10">
+                <% data[2].rows.forEach(function(r) { %>
+                    <option value="<%= r.reels %>">
+                        <%= r.reels %>
+                    </option>
+                    <% }); %>
+            </select><br>
+            <button id="o_reel_add" class="oadd">Add</button>
+            <button id="o_reel_del" class="odel">Delete</button>
+            <br>
+            <label class="labelclass selectlabel">Grammatura</label>
+            <select id="o_grammatura" multiple size="10">
+                <% data[1].rows.forEach(function(gr) { %>
+                    <option value="<%= gr.grammatura %>">
+                        <%= gr.grammatura %> gsm
+                    </option>
+                    <% }); %>
+            </select><br>
+            <button id="o_gram_add" class="oadd">Add</button>
+            <button id="o_gram_del" class="odel">Delete</button>
+            <br>
+        </div>
+        <div id="div_o_2">
+            <label class="labelclass">Plies and diameters</label>
+            <select id="o_plies" size="5">
+                <% data[4].rows.forEach(function(pl) { %>
+                    <option value="<%= pl.plie %>">
+                        <%= pl.plie %>
+                    </option>
+                    <% }); %>
+            </select>
+            <button id="o_pli_add" class="oadd">Add</button>
+            <button id="o_pli_del" class="odel">Delete</button>
+            <br> <br>
+            <select id="o_diameter" size="4">
+                <% data[5].rows.forEach(function(d) { %>
+                    <option value="<%= d.diameter %>">
+                        <%= d.diameter %> cm
+                    </option>
+                    <% }); %>
+            </select><br>
+            <button id="o_dia_add" class="oadd">Add</button>
+            <button id="o_dia_del" class="odel">Delete</button>
+            <br>
+        </div>
+        <div id="div_o_3">
+            <label class="labelclass">External diameter</label>
+            <label class="labelclass">Height</label>
+            <select id="o_height" size="5">
+                <% data[7].rows.forEach(function(h) { %>
+                    <option value="<%= h.eheight %>">
+                        <%= h.eheight %> cm
+                    </option>
+                    <% }); %>
+            </select>
+            <br>
+            <button id="o_hei_add" class="oadd">Add</button>
+            <button id="o_hei_del" class="odel">Delete</button>
+            <br>
+            <label class="labelclass">Trucks</label>
+            <select id="o_truck" size="5" multiple>
+                <% data[8].rows.forEach(function(t) { %>
+                    <option value="<%= t.truck %>">
+                        <%= t.truck %>
+                    </option>
+                    <% }); %>
+            </select>
+            <br>
+            <button id="o_tru_add" class="oadd">Add</button>
+            <button id="o_tru_del" class="odel">Delete</button>
+            <br>
+            <label class="labelclass">Weight</label>
+            <select id="o_weight" size="5" multiple>
+                <% data[9].rows.forEach(function(w) { %>
+                    <option value="<%= w.weight %>">
+                        <%= w.weight %> kg
+                    </option>
+                    <% }); %>
+            </select>
+            <br>
+            <button id="o_wei_add" class="oadd">Add</button>
+            <button id="o_wei_del" class="odel">Delete</button>
+            <br>
+        </div>
+    </div>
+    <div id="Customers" class="tabcontent">
+        <div id="c_data">
+            <label class="labelclass">Customers (<span id="customers_nr">
+                    <%= data[12].rowCount %>
+                </span>)</label><br>
+            <table id="customers">
+                <tr>
+                    <th>Customer Name<br><input type="search" id="s4" name="q" placeholder="Tissue filter"
+                            aria-label="Search through site content" /></th>
+                    <th>VAT Number<br><input type="search" id="s5" name="q" placeholder="Reel filter"
+                            aria-label="Search through site content" /></th>
+                    <th>Contact Name<br><input type="search" id="s6" name="q" placeholder="Grammatura filter"
+                            aria-label="Search through site content" /></th>
+                    <th>Email<br><input type="search" id="s7" name="q" placeholder="Grammatura filter"
+                            aria-label="Search through site content" /></th>
+                    <th>Phone<br><input type="search" id="s8" name="q" placeholder="Grammatura filter"
+                            aria-label="Search through site content" /></th>
+                    <th>Data Joined<br><input type="search" id="s9" name="q" placeholder="Grammatura filter"
+                            aria-label="Search through site content" /></th>
+                    <th>Role<br><input type="search" id="s10" name="q" placeholder="Grammatura filter"
+                            aria-label="Search through site content" /></th>
+                    <th>Status<br><input type="search" id="s11" name="q" placeholder="Grammatura filter"
+                            aria-label="Search through site content" /></th>
+                </tr>
+                <% data[12].rows.forEach(function(pr) { %>
+                    <tr id="<%= pr.customer_id %>" onclick='details("<%= pr.customer_id %>")'>
+                        <td>
+                            <%= pr.customer_name %>
+                        </td>
+                        <td>
+                            <%= pr.vat_number %>
+                        </td>
+                        <td>
+                            <%= pr.contact_name %>
+                        </td>
+                        <td>
+                            <%= pr.email %>
+                        </td>
+                        <td>
+                            <%= pr.phone %>
+                        </td>
+                        <td>
+                            <%= pr.date_joined.toLocaleDateString('hu-HU', { year: 'numeric' , month: '2-digit' ,
+                                day: '2-digit' }); %>
+                        </td>
+                        <td>
+                            <%= pr.rolename %>
+                        </td>
+                        <td>
+                            <%= pr.status %>
+                        </td>
+                    </tr>
+                    <% }); %>
+            </table>
+        </div>
+        <div id="c_details">
+
+        </div>
+    </div>
+    <div id="Requests" class="tabcontent">
+        <div style="overflow-x: scroll;">
+            <label class="labelclass">Requests (<span id="requests_nr">
+                    <%= data[13].rowCount %>
+                </span>)</label>
+            <table id="request">
+                <tr>
+                    <th>Customer<br><input type="search" id="s20" name="q" placeholder="Customer filter"/></th>
+                    <th>Tissue<br><input type="search" id="s2" name="q" placeholder="Tissue filter"/></th>
+                    <th>Plies<br><input type="search" id="s3" name="q" placeholder="Plies filter"/></th>
+                    <th>Grammatura<br><input type="search" id="s3" name="q" placeholder="Grammatura filter"/></th>
+                    <th>Diameter<br><input type="search" id="s3" name="q" placeholder="Diameter filter"/></th>
+                    <th>Reels<br><input type="search" id="s3" name="q" placeholder="Reels filter"/></th>
+                    <th>Pack 1<br><input type="search" id="s3" name="q" placeholder="Pack 1 filter"/></th>
+                    <th>Pack 2<br><input type="search" id="s3" name="q" placeholder="Pack 2 filter"/></th>
+                    <th>Requested Weight<br><input type="search" id="s3" name="q" placeholder="Weight filter"/></th>
+                    <th>Height<br><input type="search" id="s3" name="q" placeholder="Height filter"/></th>
+                    <th>Certfication<br><input type="search" id="s3" name="q" placeholder="Certification filter"/></th>
+                    <th>Requested Week<br><input type="search" id="s3" name="q" placeholder="Week filter"/></th>
+                    <th>TDS<br><input type="search" id="s3" name="q" placeholder="TDS filter"/></th>
+                    <th>Comment<br><input type="search" id="s3" name="q" placeholder="Comment filter"/></th>
+                    <th>Date<br><input type="search" id="s3" name="q" placeholder="Date filter"/></th>
+                </tr>
+                <% data[13].rows.forEach(function(pr) { %>
+                    <tr>
+                        <td>
+                            <%= pr.customer_id %>
+                        </td>
+                        <td>
+                            <%= pr.plies %>
+                        </td>
+                        <td>
+                            <%= pr.grammatura %> gsm
+                        </td>
+                        <td>
+                            <%= pr.diameter %> cm
+                        </td>
+                        <td>
+                            <%= pr.reels %> cm
+                        </td>
+                        <td>
+                            <%= pr.quotatient %>
+                        </td>
+                        <td>
+                            <%= pr.pack1 %>
+                        </td>
+                        <td>
+                            <%= pr.pack2 %>
+                        </td>
+                        <td>
+                            <%= pr.orderweight %> kg
+                        </td>
+                        <td>
+                            <%= pr.ediameter %> mm
+                        </td>
+                        <td>
+                            <%= pr.certification %>
+                        </td>
+                        <td>
+                            <%= pr.weeknum %>
+                        </td>
+                        <td>
+                            <%= pr.tds %>
+                        </td>
+                        <td>
+                            <%= pr._comment %>
+                        </td>
+                        <td>
+                            <%= pr.requestdate.toLocaleDateString('hu-HU', { year: 'numeric' , month: '2-digit' ,
+                            day: '2-digit' }); %>
+                        </td>
+                    </tr>
+                    <% }); %>
+            </table>
+        </div>
+    </div>
+    <div id="Test" class="tabcontent">
+        <button id="fakeuser" onclick="fakeuser()">Fakes users</button>
+        <button id="fakerfq" onclick="fakerfq()">Fakes RFQ</button>
+    </div>
+    <div id="message" class="message"></div>
+</div>
+<%- include('partials/footer') %>
+<!-- A script a body végén -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Itt írd meg a lapozó (vagy egyéb) scriptet
+      var rows = document.querySelectorAll("#portfolio tbody tr");
+      var rowsPerPage = 50;
+      var currentPage = 1;
+      var totalRows = rows.length;
+      var totalPages = Math.ceil(totalRows / rowsPerPage);
+  
+      function displayPage(page) {
+        currentPage = page;
+        var start = (page - 1) * rowsPerPage;
+        var end = start + rowsPerPage;
+        
+        rows.forEach(function(row, index) {
+          row.style.display = (index >= start && index < end) ? "" : "none";
+        });
+  
+        document.getElementById("page-info").textContent = "Oldal " + page + " / " + totalPages;
+      }
+  
+      document.getElementById("prev-page").addEventListener("click", function() {
+        if (currentPage > 1) {
+          displayPage(currentPage - 1);
+        }
+      });
+  
+      document.getElementById("next-page").addEventListener("click", function() {
+        if (currentPage < totalPages) {
+          displayPage(currentPage + 1);
+        }
+      });
+  
+      displayPage(1);
+    });
+  </script>
+</body>
+<script>
+    let timeout = null;
+    var s1 = document.getElementById('s1').value;
+    var s2 = document.getElementById('s2').value;
+    var s3 = document.getElementById('s3').value;
+    function filter(from) {
+        const s = this;
+
+        s1 = document.getElementById('s1').value;
+        s2 = document.getElementById('s2').value;
+        s3 = document.getElementById('s3').value;
+        const data = {
+            head: "filter",
+            data: {
+                s1: s1,
+                s2: s2,
+                s3: s3
+            }
+        }
+        var str = "";
+        var qry = "";
+        var target = "";
+        fetch('/mw', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        }).then(response => response.json())
+            .then(data => {
+                portfolio_render(data.data);
+                document.getElementById("portfolio_nr").innerHTML = (data.data).length;
+                showMessage(data.message, 'success');
+            })
+            .catch(error => console.error('Error:', error));
+
+    }
+    function handleKeyUp() {
+        clearTimeout(timeout);
+        timeout = setTimeout(function () {
+            filter();
+        }, 1000);
+    }
+    document.getElementById("s1").addEventListener('keyup', handleKeyUp);
+    document.getElementById("s2").addEventListener('keyup', handleKeyUp);
+    document.getElementById("s3").addEventListener('keyup', handleKeyUp);
+    document.querySelectorAll('.add').forEach(item => {
+        item.addEventListener('click', function (e) {
+            var str = "";
+            var qry = "";
+            var target = "";
+            if (e.srcElement.id == "tissue_add") {
+                target = "portfolio";
+                const s_tissue = document.querySelectorAll('#tissues option:checked');
+                const s_reel = document.querySelectorAll('#reels option:checked');
+                const s_gramm = document.querySelectorAll('#grammatura option:checked');
+                for (i = 0; i < s_reel.length; i++) {
+                    for (j = 0; j < s_gramm.length; j++) {
+                        str = str + "('" + s_tissue[0].value + "', " + s_reel[i].value + ", " + s_gramm[j].value + "), ";
+                    }
+                }
+                str = str.substring(0, str.length - 2);
+                qry = "INSERT into portfolio (tissue, reel, grammatura) VALUES " + str;
+            } else if (e.srcElement.id == "plies_add") {
+                target = "plie_param";
+                const s_plies = document.querySelectorAll('#plies option:checked');
+                const s_diam = document.querySelectorAll('#diameter option:checked');
+                for (i = 0; i < s_diam.length; i++) {
+                    str = str + "('" + s_plies[0].value + "', " + s_diam[i].value + "), ";
+                }
+                str = str.substring(0, str.length - 2);
+                qry = "INSERT into plie_param (plie, diameter) VALUES " + str;
+            } else if (e.srcElement.id == "ediamater_add") {
+                target = "ediam_param";
+                const s_height = document.querySelectorAll('#height option:checked');
+                const s_truck = document.querySelectorAll('#truck option:checked');
+                const s_tis2 = document.querySelectorAll('#tissues2 option:checked');
+                const s_weight = document.querySelectorAll('#weight option:checked');
+                for (i = 0; i < s_truck.length; i++) {
+                    for (j = 0; j < s_tis2.length; j++) {
+                        for (g = 0; g < s_weight.length; g++) {
+                            str = str + "(" + s_height[0].value + ", '" + s_truck[i].value + "', '" + s_tis2[j].value + "', " + s_weight[g].value + "), ";
+                        }
+                    }
+                }
+                str = str.substring(0, str.length - 2);
+                qry = "INSERT into ediam_param (eheight, truck, tissue, weight) VALUES " + str;
+            }
+            fetch('/mw/{"head":"add", "target":"' + target + '", "data":"' + qry + '"}', { method: 'GET' })
+                .then(function (response) {
+                    return response.json()
+                })
+                .then(function (data) {
+                    time = Math.trunc(JSON.parse(data).time / 1000);
+                    update();
+                    switch (e.srcElement.id) {
+                        case "tissue_add":
+                            portfolio_render(JSON.parse(data).data);
+                            break;
+                        case "plies_add":
+                            plie_param_render(JSON.parse(data).data);
+                            break;
+                        case "ediamater_add":
+                            ediam_param_render(JSON.parse(data).data);
+                            break;
+
+                    }
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+        })
+    });
+
+
+    document.querySelectorAll('.del').forEach(item => {
+        item.addEventListener('click', function (e) {
+            var qry = "";
+            var str = "";
+            var target = "";
+            if (e.srcElement.id == "btn2") {
+                target = "portfolio";
+                const ids = document.querySelectorAll('#portfolio input[type="checkbox"]:checked');
+                ids.forEach(function (el) {
+                    if (el.id != "selectall") {
+                        str = str + "'" + el.id + "', ";
+                    }
+                })
+                str = str.substring(0, str.length - 2);
+                qry = "DELETE from portfolio WHERE id IN (" + str + ")";
+            } else if (e.srcElement.id == "plies_del") {
+                target = "plie_param";
+                const ids = document.querySelectorAll('#plie_params input[type="checkbox"]:checked');
+                ids.forEach(function (el) {
+                    if (el.id != "selectall") {
+                        str = str + "'" + el.id + "', ";
+                    }
+                    str = str.substring(0, str.length - 2);
+                    qry = "DELETE from plie_param WHERE id IN (" + str + ")";
+                })
+            } else if (e.srcElement.id == "ediam_del") {
+                target = "ediam_param";
+                const ids = document.querySelectorAll('#ediam_params input[type="checkbox"]:checked');
+                ids.forEach(function (el) {
+                    if (el.id != "selectall") {
+                        str = str + "'" + el.id + "', ";
+                    }
+                    str = str.substring(0, str.length - 2);
+                    qry = "DELETE from ediam_param WHERE id IN (" + str + ")";
+                })
+            }
+            fetch('/mw/{"head":"delete", "target":"' + target + '", "data":"' + qry + '"}', { method: 'GET' })
+                .then(function (response) {
+                    return response.json()
+                })
+                .then(function (data) {
+                    switch (e.srcElement.id) {
+                        case "btn2":
+                            portfolio_render(JSON.parse(data).data);
+                            break;
+                        case "plies_del":
+                            plie_param_render(JSON.parse(data).data);
+                            break;
+                        case "ediam_del":
+                            ediam_param_render(JSON.parse(data).data);
+                            break;
+                    }
+                    console.log(JSON.parse(data).message);
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+        })
+    });
+    document.getElementById("s4").addEventListener('keyup', handleKeyUp2);
+    document.getElementById("s5").addEventListener('keyup', handleKeyUp2);
+    document.getElementById("s6").addEventListener('keyup', handleKeyUp2);
+    document.getElementById("s7").addEventListener('keyup', handleKeyUp2);
+    document.getElementById("s8").addEventListener('keyup', handleKeyUp2);
+    document.getElementById("s9").addEventListener('keyup', handleKeyUp2);
+    document.getElementById("s10").addEventListener('keyup', handleKeyUp2);
+    document.getElementById("s11").addEventListener('keyup', handleKeyUp2);
+
+    function fakeuser() {
+        fetch('/test/{"head":"fakeuser"}', { method: 'GET' })
+            .then(function (response) {
+                return response.json()
+            })
+            .then(function (data) {
+                showMessage(data.message);
+            })
+    }
+    function fakerfq() {
+        fetch('/test/{"head":"fakerfq"}', { method: 'GET' })
+            .then(function (response) {
+                return response.json()
+            })
+            .then(function (data) {
+                showMessage(data.message);
+            })
+    }
+</script>
+
+</html>
