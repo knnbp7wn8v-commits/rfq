@@ -6,7 +6,11 @@ function createElement(type, attributes, ...children) {
     }
     children.forEach(child => {
         if (typeof child === "string") {
-            element.innerHTML += child;
+            // Szöveges gyermek mindig sima szövegcsomópontként kerül be, nem
+            // innerHTML-be fűzve - így egy esetlegesen adatból (adatbázisból,
+            // felhasználói bevitelből) származó string sosem értelmeződik
+            // HTML-ként. Lásd: kod_atvilagitas_kliens.md, 1.1 pont.
+            element.appendChild(document.createTextNode(child));
         } else {
             element.appendChild(child);
         }
@@ -14,17 +18,16 @@ function createElement(type, attributes, ...children) {
     return element;
 }
 
-function remove_div(element) {
-    if (document.getElementById(element)) [
-        document.getElementById(element).remove()
-    ]
-  }
-
 function remove_element(element) {
-    if (document.getElementById(element)) [
-        document.getElementById(element).remove()
-    ]
+    const el = document.getElementById(element);
+    if (el) {
+        el.remove();
+    }
 }
+// A remove_div korábban a remove_element-tel szó szerint azonos, duplikált
+// függvény volt, és mindkettő {} blokk helyett [] tömb-literált használt -
+// ez véletlenül működött, de megtévesztő volt. Lásd: kod_atvilagitas_kliens.md, 2.2 pont.
+const remove_div = remove_element;
 
 function createInput(type, id, value = '', extraAttributes = {}) {
     return createElement("input", { type, id, value, ...extraAttributes });
@@ -133,11 +136,11 @@ const delivery2 = createDiv("delivery2");
 delivery2.classList.add("delivery2_class");
 const d1_label = createLabel("", "Delivery Address");
 delivery1.appendChild(d1_label);
-const d2_label = createLabel("", "<span>Country:</span>");
+const d2_label = createLabel("", createSpan("", "", "Country:"));
 const d2_in = createInput("text", "d2_in");
-const d3_label = createLabel("", "<span>Postal Code:</span>");
+const d3_label = createLabel("", createSpan("", "", "Postal Code:"));
 const d3_in = createInput("text", "d3_in");
-const d4_label = createLabel("", "<span>Address:</span>");
+const d4_label = createLabel("", createSpan("", "", "Address:"));
 const d4_in = createInput("text", "d4_in");
 
 delivery2.appendChild(d2_label);
@@ -157,15 +160,15 @@ addressDiv.appendChild(delivery2);
 const companyDiv = createDiv("companyDiv");
 const companyTag = createLabel("", "Company Details")
 companyTag.classList.add("labelclass");
-const c1 = createLabel("", "<span>Name:</span>");
+const c1 = createLabel("", createSpan("", "", "Name:"));
 const c1_in = createInput("text", "c1_in", "" );
-const c2 = createLabel("", "<span>VAT number:</span>");
+const c2 = createLabel("", createSpan("", "", "VAT number:"));
 const c2_in = createInput("text", "c2_in");
-const c3 = createLabel("", "<span>Contact Person:</span>");
+const c3 = createLabel("", createSpan("", "", "Contact Person:"));
 const c3_in = createInput("text", "c3_in");
-const c4 = createLabel("", "<span>E-mail:</span>");
+const c4 = createLabel("", createSpan("", "", "E-mail:"));
 const c4_in = createInput("text", "c4_in");
-const c5 = createLabel("", "<span>Phone nr:</span>");
+const c5 = createLabel("", createSpan("", "", "Phone nr:"));
 const c5_in = createInput("text", "c5_in");
 companyDiv.appendChild(companyTag);
 companyDiv.appendChild(createBr());
@@ -188,26 +191,26 @@ addressDiv.appendChild(companyDiv);
 
 var paymentDiv = createDiv("paymentDiv");
 var paymentTag = createLabel("paymentTag", "", "labelclass");
-var p1_0 = createLabel("p1_0", "<span>Payment term:</span>", "");
-var p0_l = createLabel("p0_l", "<span> </span>", "dummylabel");
-var p1_l = createLabel("p1_l", "<span>prepayment</span>", "payment_table");
+var p1_0 = createLabel("p1_0", createSpan("", "", "Payment term:"), "");
+var p0_l = createLabel("p0_l", createSpan("", "", " "), "dummylabel");
+var p1_l = createLabel("p1_l", createSpan("", "", "prepayment"), "payment_table");
 var p1_in = createInput("checkbox", "p1_in", "Prepayment")
 p1_in.checked = true;
 p1_in.onclick = function() {
     paymentthis(this.id);
 }
 p1_in.setAttribute("value", "Prepayment");
-var p2_l = createLabel("p2_l", "<span>in 3 days</span>", "payment_table");
+var p2_l = createLabel("p2_l", createSpan("", "", "in 3 days"), "payment_table");
 var p2_in = createInput("checkbox", "p2_in", "In 3 days");
 p2_in.onclick = function() {
     paymentthis(this.id);
 }
-var p3_l = createLabel("p3_l", "<span>in 5 days</span>", "payment_table");
+var p3_l = createLabel("p3_l", createSpan("", "", "in 5 days"), "payment_table");
 var p3_in = createInput("checkbox", "p3_in", "In 5 days");
 p3_in.onclick = function() {
     paymentthis(this.id);
 }
-var p4_l = createLabel("p4_l", "<span>in 30 days</span>", "payment_tabel");
+var p4_l = createLabel("p4_l", createSpan("", "", "in 30 days"), "payment_tabel");
 var p4_in = createInput("checkbox", "p4_in", "In 30 days");
 p4_in.onclick = function() {
     paymentthis(this.id);
@@ -267,6 +270,11 @@ var pack1, pack2, totalTrucks, pertrack, TotalWeight = 0;
 var x, y, o, weight_xml, tds_xml = "";
 var quotatient = 0;
 var weight, orderWeight, weight_t, w1, w2 = 0;
+// Az Ediameter legördülő opcióihoz tartozó súlyértékeket egy, az adott
+// opció-értékhez kötött Map-ben tároljuk, nem egy a switch-ág
+// mellékhatásaként beállított, törékeny globális változóban.
+// Lásd: kod_atvilagitas_kliens.md, 2.3 pont.
+const ediameterWeightMap = new Map();
 //const form = createForm('formId', 'form-style-1', 'submit', 'post');
 const form = createDiv("form");
 orderDiv.appendChild(form);
@@ -291,7 +299,7 @@ form.appendChild(tissueDiv);
 
 async function rendercustomer() {
     const response = await fetch('/mw/{"head":"customer"}');
-    const data = await response.json();
+    const data = await checkResponse(response);
     //const data = JSON.parse(rawData.data); // Assuming the server response needs to be parsed as JSON
     document.getElementById("c1_in").value = data.data[0].customer_name;
     document.getElementById("c2_in").value = data.data[0].vat_number;
@@ -303,16 +311,19 @@ async function rendercustomer() {
 
 async function renderoptions(n, where) {
     const response = await fetch('/mw/{"head":"option", "data":"' + n + '", "where":"' + where + '"}');
-    const data = await response.json();
+    const data = await checkResponse(response);
     time = Math.trunc(data.time / 1000);
     const selectElement = document.getElementById(n);
     var option = document.createElement('option');
     option.value = "Select";
     option.textContent = "Select";
     selectElement.appendChild(option);
+    if (n === "Ediameter") {
+        ediameterWeightMap.clear();
+    }
     data.data.forEach(optionData => {
         option = document.createElement('option');
-        switch (n) {
+        switch (n) {
             case "Tissue":
             option.value = optionData.tissue;
             option.textContent = optionData.tissue;
@@ -336,7 +347,7 @@ async function renderoptions(n, where) {
             case "Ediameter":
             option.value = optionData.eheight + " cm (" + optionData.truck + " packs/truck)";
             option.textContent = optionData.eheight + " cm (" + optionData.truck + " packs/truck)";
-            weight = optionData.weight;
+            ediameterWeightMap.set(option.value, optionData.weight);
             break;
         }
         selectElement.appendChild(option);
@@ -441,7 +452,13 @@ function Reels_select_id() {
     quotatient = Math.floor(280 / h);
     p = h * quotatient;
     const reelsTag2Div = createDiv('reelsTag2Div');
-    const reelsTag2 = createLabel('reelsTag2', "Number of reels are in one pack: " + quotatient + "</br>Height of one pack: " + p + "</br>Is it passable?", "</br>");
+    const reelsTag2 = createElement('label', { id: 'reelsTag2' },
+        "Number of reels are in one pack: " + quotatient,
+        createBr(),
+        "Height of one pack: " + p,
+        createBr(),
+        "Is it passable?"
+    );
     const b1 = createButton('b1', 'Yes', 'yes()', 'button');
     addEvent(b1, "click", () => yes());
     const b2 = createButton('b2', 'no', 'no()', 'button');
@@ -469,7 +486,7 @@ function no() {
         validate(event)
     };
     let b1 = document.createElement('button');
-    b1.innerHTML = "Set";
+    b1.textContent = "Set";
     b1.setAttribute("id", "b3");
     b1.setAttribute("type", "button");
     b1.onclick = function () {
@@ -489,18 +506,19 @@ function set() {
     let z = document.getElementById("heightOther").value;
     quotatient = Math.floor(z/h)
     p = h*quotatient
-    let br = document.createElement("br");
-    let reelsTag2 = document.createElement('label');
+    let reelsTag2 = createElement('label', { id: 'reelsTag2' },
+        "Number of reels are in one pack: " + quotatient,
+        createBr(),
+        "Height of one pack: " + p + " cm"
+    );
     let div2 = document.getElementById("reelsTag2Div");
-    reelsTag2.innerHTML = "Number of reels are in one pack: " + quotatient + "</br>Height of one pack: " + p + " cm" ;
-    reelsTag2.setAttribute("id", "reelsTag2");
     div2.appendChild(reelsTag2);
     ediameter();
   }
 
 function validate(evt) {
     var theEvent = evt || window.event;
-  
+
     // Handle paste
     if (theEvent.type === 'paste') {
         key = event.clipboardData.getData('text/plain');
@@ -534,8 +552,21 @@ function Ediameter_select_id(selectobject) {
     remove_div("orderWeightDiv");
     remove_div("truckDiv")
     remove_div("weekDiv")
-    weight_t =  Math.floor(weight / 274) * document.getElementById("Reels").value.split(" ")[0];
-    const label = createLabel("", "Expected weight of one reel: " + weight_t + " kg </br>Expected weight of one pack: " + weight_t * quotatient + " kg<br>Is it OK?<br>", "lblweight");
+    const selectedEdiameter = document.getElementById("Ediameter").value;
+    const selectedWeight = ediameterWeightMap.get(selectedEdiameter);
+    if (selectedWeight === undefined) {
+        console.error('Nem található súlyadat a kiválasztott Ediameter opcióhoz:', selectedEdiameter);
+    }
+    weight_t =  Math.floor(selectedWeight / 274) * document.getElementById("Reels").value.split(" ")[0];
+    const label = createElement("label", {},
+        "Expected weight of one reel: " + weight_t + " kg ",
+        createBr(),
+        "Expected weight of one pack: " + (weight_t * quotatient) + " kg",
+        createBr(),
+        "Is it OK?",
+        createBr()
+    );
+    label.className = "lblweight";
     const b4 = createButton('b4', 'Yes', '', 'button');
     addEvent(b4, "click", () => weightyes());
     const b5 = createButton('b4', 'No', '', 'button');
@@ -556,7 +587,15 @@ function weightno() {
     pack2 = quotatient - pack1;
     w1 = Math.floor((weight_t / quotatient) * pack1);
     w2 = weight_t - w1;
-    const label = createLabel("", "Instead of the original " + quotatient + " reels/pack, we recommend:</br>" + pack1 + "+" + pack2 + " reels/pack. </br>The expected weight of the packages: " + w1 + "+" + w2 + " kg.</br>", "lblweight");
+    const label = createElement("label", {},
+        "Instead of the original " + quotatient + " reels/pack, we recommend:",
+        createBr(),
+        pack1 + "+" + pack2 + " reels/pack.",
+        createBr(),
+        "The expected weight of the packages: " + w1 + "+" + w2 + " kg.",
+        createBr()
+    );
+    label.className = "lblweight";
     const b6 = createButton('b6', 'Yes', '', 'button');
     addEvent(b6, "click", () => weight_2nd_yes());
     const b7 = createButton('b7', 'No', '', 'button');
@@ -578,7 +617,10 @@ function weight_2nd_no() {
     remove_element("orderweightDiv");
     remove_element("truckDiv")
     remove_element("weekDiv")
-    const label = createLabel("reelsTag2", "</br>please decrease the height of the reels or the core height!", "");
+    const label = createElement("label", { id: "reelsTag2" },
+        createBr(),
+        "please decrease the height of the reels or the core height!"
+    );
     const div = createDiv("reelsTag2Div");
     div.appendChild(label);
     document.getElementById("ReelsDiv").appendChild(div);
@@ -586,11 +628,25 @@ function weight_2nd_no() {
 }
 function weight_2nd_yes() {
     weightyes();
-    document.getElementById("weightDiv").innerHTML = "<label>Expected weight of the reels: " + w1 + " + " + w2 + " kg<br>Expected weight of the packs: " + w1 * pack1 + " + " + w2 * pack2 + " kg";
+    const weightDiv = document.getElementById("weightDiv");
+    weightDiv.innerHTML = "";
+    const label = createElement("label", {},
+        "Expected weight of the reels: " + w1 + " + " + w2 + " kg",
+        createBr(),
+        "Expected weight of the packs: " + (w1 * pack1) + " + " + (w2 * pack2) + " kg"
+    );
+    weightDiv.appendChild(label);
 }
 
 function weightyes() {
-    document.getElementById("weightDiv").innerHTML = "<label>Expected weight of one reel: " + weight_t + " kg<br>Expected weight of one pack: " + weight_t * quotatient + " kg";
+    const weightDiv = document.getElementById("weightDiv");
+    weightDiv.innerHTML = "";
+    const summaryLabel = createElement("label", {},
+        "Expected weight of one reel: " + weight_t + " kg",
+        createBr(),
+        "Expected weight of one pack: " + (weight_t * quotatient) + " kg"
+    );
+    weightDiv.appendChild(summaryLabel);
     const label1 = createLabel("", "Cerification");
     const cert1lbl = createLabel("", "FSC needed");
     const cert2lbl = createLabel("", "No needs for FSC");
@@ -648,7 +704,7 @@ function tdscheck() {
     const _reels = document.getElementById("Reels").value;
     const _ediameter = (document.getElementById("Ediameter").value).split(" ")[0];
     let _fsc = "";
-    for (i=1; i<3; i++) {
+    for (let i=1; i<3; i++) {
         if (document.getElementById("cert"+i).checked == true) {
             _fsc = document.getElementById("cert"+i).value;
         }
@@ -672,12 +728,26 @@ function tdscheck() {
         },
         body: JSON.stringify(data)
       })
-      .then(response => response.json())
+      .then(checkResponse)
       .then(data => {
         if (data.counter.rowCount > 0) {
             document.getElementById("tds_div").innerHTML = "";
             var tdslbldiv = createDiv("tdslbldiv");
-            var tdslbl = createLabel("", "We found a technical data sheet what meet your request.<br><a target='blank' href='/assets/TDS/TDS_" + data.counter.rows[0].sku + ".pdf' >Click here!</a><br>Is it passable for you?<br>");
+            const sku = data.counter.rows[0].sku;
+            const tdsLink = document.createElement("a");
+            tdsLink.setAttribute("target", "blank");
+            // A sku értéket URL-komponensként escapeljük, hogy egy benne lévő
+            // vezérlő-/idézőjel karakter se törhessen ki a href attribútumból.
+            tdsLink.href = "/assets/TDS/TDS_" + encodeURIComponent(sku) + ".pdf";
+            tdsLink.textContent = "Click here!";
+            var tdslbl = createElement("label", {},
+                "We found a technical data sheet what meet your request.",
+                createBr(),
+                tdsLink,
+                createBr(),
+                "Is it passable for you?",
+                createBr()
+            );
             document.getElementById("tds_div").appendChild(tdslbl)
             var tds_in1 = createInput("checkbox", "tds_in1", "yes");
             var tds_in2 = createInput("checkbox", "tds_in2", "no");

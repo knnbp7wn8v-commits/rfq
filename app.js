@@ -182,9 +182,21 @@ async function updateUser(data) {
 
   if (data.password === "") {
     // Paraméterezett lekérdezés, SQL injection védelemmel
+    // Üres jelszó = a jelszó nem változik.
     query = `UPDATE customers SET role_id = $1, status = $2 WHERE customer_id = $3`;
     values = [data.role, data.status, data.id];
   } else {
+    // A kliensoldali (admin.js validatePassword) jelszóerősség-ellenőrzés
+    // korábban megkerülhető volt (a Mentés gomb nem vette figyelembe az
+    // eredményét), és szerveroldalon semmilyen hosszellenőrzés nem történt
+    // mentés előtt. Defense in depth: ugyanazt a minimumkövetelményt
+    // kényszerítjük ki, mint a regisztrációnál (MIN_PASSWORD_LENGTH).
+    // Lásd: kod_atvilagitas_kliens.md, 3.2 pont.
+    if (typeof data.password !== 'string' || data.password.length < MIN_PASSWORD_LENGTH) {
+      const validationError = new Error(`A jelszónak legalább ${MIN_PASSWORD_LENGTH} karakter hosszúnak kell lennie`);
+      validationError.statusCode = 400;
+      throw validationError;
+    }
     const hashedPassword = await bcrypt.hash(data.password, 10);
     query = `UPDATE customers SET role_id = $1, status = $2, password = $3 WHERE customer_id = $4`;
     values = [data.role, data.status, hashedPassword, data.id];
@@ -327,7 +339,9 @@ app.post('/users', async (req, res) => {
     }
   } catch (error) {
     console.error('Error processing request:', error);
-    res.status(500).send({ message: 'Error processing request', status: 'error' });
+    // A validációs hibák (pl. túl rövid jelszó) explicit 400-as státuszt
+    // kapnak (lásd updateUser), minden más hiba a korábbi 500-as alapértelmezést.
+    res.status(error.statusCode || 500).send({ message: error.message || 'Error processing request', status: 'error' });
   }
 });
 

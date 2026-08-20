@@ -184,7 +184,7 @@ function details(id) {
       },
       body: JSON.stringify(data)
    })
-      .then(response => response.json())
+      .then(checkResponse)
       .then(data => {
          document.getElementById("c_details").innerHTML = "";
          let table = document.createElement('table');
@@ -310,8 +310,19 @@ function details(id) {
          var btn = document.createElement("button");
          btn.setAttribute("id", "update");
          btn.setAttribute("type", "button");
-         btn.innerHTML = "Update";
+         btn.textContent = "Update";
          btn.onclick = function () {
+            // A jelszó-erősségi visszajelzés korábban csak kozmetikai volt:
+            // a mentés a validatePassword() eredményétől függetlenül lefutott.
+            // Üres jelszó = "a jelszó nem változik" (lásd app.js updateUser),
+            // ezért csak akkor kényszerítjük ki a szabályt, ha az admin
+            // ténylegesen új jelszót ad meg. Lásd: kod_atvilagitas_kliens.md, 3.2 pont.
+            const newPassword = document.getElementById('password').value;
+            const confirmNewPassword = document.getElementById('confirmPassword').value;
+            if ((newPassword !== '' || confirmNewPassword !== '') && !validatePassword()) {
+               showMessage('Kérjük, javítsa a jelszóval kapcsolatos hibákat a mentés előtt.', 'error');
+               return;
+            }
             details_update(data.data[0].customer_id);
          }
          document.getElementById("c_details").append(btn);
@@ -326,12 +337,27 @@ function details(id) {
          password.addEventListener('keyup', validatePassword);
          confirmPassword.addEventListener('keyup', validatePassword);
       })
-      .catch(error => console.error('Error:', error));
+      .catch(error => {
+         console.error('Error:', error);
+         showMessage(error.message || 'Hiba történt az ügyfél adatainak betöltésekor.', 'error');
+      });
 }
 
+/**
+ * A jelszómezőket és a visszajelző elemeket korábban a HTML id-attribútumból
+ * a böngésző által automatikusan létrehozott implicit globális változókon
+ * (pl. `password`, `passwordFeedback`) keresztül érte el a függvény - ez
+ * elavult, nem szabványos böngésző-viselkedésre támaszkodott. Most explicit
+ * document.getElementById hívásokkal. Lásd: kod_atvilagitas_kliens.md, 3.1 pont.
+ */
 function validatePassword() {
-   const passwordValue = password.value;
-   const confirmPasswordValue = confirmPassword.value;
+   const passwordEl = document.getElementById('password');
+   const confirmPasswordEl = document.getElementById('confirmPassword');
+   const passwordFeedbackEl = document.getElementById('passwordFeedback');
+   const confirmPasswordFeedbackEl = document.getElementById('confirmPasswordFeedback');
+
+   const passwordValue = passwordEl.value;
+   const confirmPasswordValue = confirmPasswordEl.value;
    let valid = true;
    let feedback = '';
 
@@ -356,20 +382,20 @@ function validatePassword() {
    }
 
    if (valid) {
-      passwordFeedback.innerHTML = 'A jelszó megfelelő.';
-      passwordFeedback.className = 'valid';
+      passwordFeedbackEl.innerHTML = 'A jelszó megfelelő.';
+      passwordFeedbackEl.className = 'valid';
    } else {
-      passwordFeedback.innerHTML = feedback;
-      passwordFeedback.className = 'invalid';
+      passwordFeedbackEl.innerHTML = feedback;
+      passwordFeedbackEl.className = 'invalid';
    }
 
    if (confirmPasswordValue !== passwordValue) {
-      confirmPasswordFeedback.textContent = 'A két jelszó nem egyezik meg.';
-      confirmPasswordFeedback.className = 'invalid';
+      confirmPasswordFeedbackEl.textContent = 'A két jelszó nem egyezik meg.';
+      confirmPasswordFeedbackEl.className = 'invalid';
       valid = false;
    } else {
-      confirmPasswordFeedback.textContent = 'A két jelszó megegyezik.';
-      confirmPasswordFeedback.className = valid ? 'valid' : 'invalid';
+      confirmPasswordFeedbackEl.textContent = 'A két jelszó megegyezik.';
+      confirmPasswordFeedbackEl.className = valid ? 'valid' : 'invalid';
    }
 
    return valid;
@@ -385,7 +411,7 @@ function details_update(id) {
          id: id,
          password: pass,
          role: role,
-         status, status
+         status: status
       }
    };
    fetch('/users', {
@@ -394,7 +420,7 @@ function details_update(id) {
          'Content-Type': 'application/json'
       },
       body: JSON.stringify(data)
-   }).then(response => response.json())
+   }).then(checkResponse)
       .then(data => {
          const d = {
             head: "list",
@@ -407,14 +433,19 @@ function details_update(id) {
             },
             body: JSON.stringify(d)
          })
-            .then(response => response.json())
+            .then(checkResponse)
             .then(data2 => {
                users_render(data2.data);
-            });
+            })
+            .catch(error => console.error('Error:', error));
          document.getElementById("c_details").innerHTML = "";
          showMessage(data.message, 'success');
 
       })
+      .catch(error => {
+         console.error('Error:', error);
+         showMessage(error.message || 'Hiba történt a mentés során.', 'error');
+      });
 
 }
 function usersfilter() {
@@ -445,12 +476,15 @@ function usersfilter() {
          'Content-Type': 'application/json'
       },
       body: JSON.stringify(data)
-   }).then(response => response.json())
+   }).then(checkResponse)
       .then(data => {
          users_render(data.data);
          document.getElementById("customers_nr").innerHTML = (data.data).length;
       })
-      .catch(error => console.error('Error:', error));
+      .catch(error => {
+         console.error('Error:', error);
+         showMessage(error.message || 'Hiba történt a szűrés során.', 'error');
+      });
 
 }
 

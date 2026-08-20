@@ -1,3 +1,40 @@
+/**
+ * HTML-re nézve veszélyes karakterek escape-elése. Minden olyan helyen
+ * használandó, ahol felhasználó (vagy adatbázisból származó) szöveg
+ * HTML-tartalomba (pl. e-mail törzsbe) kerül string-összefűzéssel, nem
+ * pedig biztonságos DOM-elem-építéssel (createElement/textContent).
+ * Lásd: kod_atvilagitas_kliens.md, 1.1-1.2 pont.
+ */
+function escapeHtml(value) {
+  if (value === null || value === undefined) {
+    return '';
+  }
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
+ * Egységesen kezeli a fetch() válaszát: sikeres (2xx) válasz esetén a
+ * JSON törzzsel tér vissza, egyébként elutasított Promise-t ad vissza egy
+ * érthető hibaüzenettel - így a hívó .then()-lánca nem próbál egy hibaválasz
+ * (pl. lejárt munkamenet -> 401) törzsét sikeres adatként feldolgozni.
+ * Lásd: kod_atvilagitas_kliens.md, 2.4 pont.
+ */
+function checkResponse(response) {
+  return response.json()
+    .catch(() => ({}))
+    .then(body => {
+      if (!response.ok) {
+        throw new Error(body.message || body.error || ('HTTP hiba: ' + response.status));
+      }
+      return body;
+    });
+}
+
 function showMessage(message, className) {
   const messageDiv = document.getElementById('message');
   messageDiv.textContent = message;
