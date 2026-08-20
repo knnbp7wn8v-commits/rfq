@@ -355,16 +355,32 @@ async function checkTDS(data) {
   const query = `SELECT SKU FROM tds WHERE itemtype = $1 AND plies = $2 AND height = $3 AND grammatura = $4 AND diameter = $5 AND ediameter = $6`;
   const values = [data.itemtype, data.plies, data.height, data.grammatura, data.diameter, data.ediameter];
   const result = await pool.query(query, values);
-  return result;
+  return result.rows;
 }
 
 async function createOrder(userid) {
-  await pool.query(`INSERT INTO rfq (customer_id, tissue, plies, grammatura, diameter, reels, quotatient, pack1, pack2, orderweight, w1, w2, ediameter, certification, weeknum, tds, _comment) 
-                    SELECT customer_id, tissue, plies, grammatura, diameter, reels, quotatient, pack1, pack2, orderweight, w1, w2, ediameter, certification, weeknum, tds, _comment 
-                    FROM cart WHERE customer_id = $1`, [userid]);
-
-  const result = await pool.query(`SELECT * FROM cart WHERE customer_id = $1`, [userid]);
-  return result.rows;
+  // A beszúrás és a kosár ürítése egy tranzakcióban történik, hogy a
+  // megrendelés kétszer beküldve ne duplikálja a korábban már átvitt
+  // tételeket (a kosár korábban sosem ürült ki rendelés után).
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const inserted = await client.query(
+      `INSERT INTO rfq (customer_id, tissue, plies, grammatura, diameter, reels, quotatient, pack1, pack2, orderweight, w1, w2, ediameter, certification, weeknum, tds, _comment)
+       SELECT customer_id, tissue, plies, grammatura, diameter, reels, quotatient, pack1, pack2, orderweight, w1, w2, ediameter, certification, weeknum, tds, _comment
+       FROM cart WHERE customer_id = $1
+       RETURNING *`,
+      [userid]
+    );
+    await client.query('DELETE FROM cart WHERE customer_id = $1', [userid]);
+    await client.query('COMMIT');
+    return inserted.rows;
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
 }
 
 async function removeAllFromCart(userid) {
@@ -452,10 +468,82 @@ function getSessionTime(request) {
 async function getDataResponse(target) {
   return await getdata(target);
 }
-async function addOrDeleteData(query, action) {
-  await pool.query(query);
-  const message = action === "add" ? "Data successfully inserted" : "Data successfully deleted";
-  return message;
+// Fehérlistázott célok az admin CRUD (/mw/:data "add"/"delete") számára.
+// A tábla nevét SQL azonosítóként (INTO/FROM után) NEM lehet paraméterként
+// átadni, ezért az csak akkor kerülhet a lekérdezés szövegébe, ha pontosan
+// egyezik ennek a fehérlistának egyik kulcsával - a kliens által küldött
+// egyéb adat (oszlopértékek) mindig paraméterezve fut.
+const ADMIN_CRUD_TARGETS = {
+  portfolio: {
+    columns: [
+      { name: 'tissue', type: 'string' },
+      { name: 'reel', type: 'number' },
+      { name: 'grammatura', type: 'number' },
+    ],
+  },
+  plie_param: {
+    columns: [
+      { name: 'plie', type: 'string' },
+      { name: 'diameter', type: 'number' },
+    ],
+  },
+  ediam_param: {
+    columns: [
+      { name: 'eheight', type: 'number' },
+      { name: 'truck', type: 'string' },
+      { name: 'tissue', type: 'string' },
+      { name: 'weight', type: 'number' },
+    ],
+  },
+};
+
+async function adminInsertRows(target, rows) {
+  const targetDef = ADMIN_CRUD_TARGETS[target];
+  if (!targetDef) {
+    throw new Error(`Invalid target: ${target}`);
+  }
+  if (!Array.isArray(rows) || rows.length === 0) {
+    throw new Error('No rows to insert');
+  }
+
+  const values = [];
+  const rowPlaceholders = rows.map((row) => {
+    const placeholders = targetDef.columns.map(({ name, type }) => {
+      let value = row[name];
+      if (type === 'number') {
+        value = Number(value);
+        if (!Number.isFinite(value)) {
+          throw new Error(`Invalid numeric value for column "${name}"`);
+        }
+      } else {
+        value = String(value);
+      }
+      values.push(value);
+      return `$${values.length}`;
+    });
+    return `(${placeholders.join(', ')})`;
+  });
+
+  const columnNames = targetDef.columns.map((c) => c.name).join(', ');
+  const query = `INSERT INTO ${target} (${columnNames}) VALUES ${rowPlaceholders.join(', ')}`;
+  await pool.query(query, values);
+}
+
+async function adminDeleteRows(target, ids) {
+  if (!ADMIN_CRUD_TARGETS[target]) {
+    throw new Error(`Invalid target: ${target}`);
+  }
+  if (!Array.isArray(ids) || ids.length === 0) {
+    throw new Error('No ids to delete');
+  }
+  const numericIds = ids.map((id) => {
+    const n = parseInt(id, 10);
+    if (!Number.isInteger(n)) {
+      throw new Error(`Invalid id: ${id}`);
+    }
+    return n;
+  });
+  await pool.query(`DELETE FROM ${target} WHERE id = ANY($1)`, [numericIds]);
 }
 async function getOptions(optionName, whereCondition) {
   let query = "";
@@ -509,8 +597,21 @@ app.get('/mw/:data', async (request, response) => {
         const responseData = { message: "Data successfully retrieved", data: data };
         return response.json(responseData);
       } else if (head === "add" || head === "delete") {
-        const qry = parsedData.data;
-        const message = await addOrDeleteData(qry, head);
+        // Adminisztrációs törzsadat-kezelés (portfolio/plie_param/ediam_param).
+        // Korábban a kliens a teljes SQL-utasítást küldte, amit a szerver
+        // validáció nélkül futtatott le - ez tetszőleges SQL végrehajtását
+        // tette volna lehetővé bármely bejelentkezett felhasználó számára.
+        // Mostantól csak admin jogosultsággal, és csak a fehérlistázott
+        // (ADMIN_CRUD_TARGETS) táblákra, paraméterezett lekérdezéssel fut.
+        if (!request.user || request.user.role_id !== ROLES.ADMIN) {
+          return response.status(403).send({ message: 'Forbidden' });
+        }
+        if (head === "add") {
+          await adminInsertRows(target, parsedData.data);
+        } else {
+          await adminDeleteRows(target, parsedData.data);
+        }
+        const message = head === "add" ? "Data successfully inserted" : "Data successfully deleted";
         const data = await getDataResponse(target);
         const responseData = { time, message, data };
         return response.json(responseData);
@@ -547,11 +648,12 @@ app.get('/mw/:data', async (request, response) => {
 // Protected route
 app.get('/protected', (req, res) => {
   if (req.isAuthenticated()) {
-    setInterval(() => {
-      logSessionTime(req);
-    }, 1000); // 1 másodpercenként fut
-    // Send or render the protected content
-    // For simplicity, sending text response, but you could also render an HTML page
+    // Megjegyzés: itt korábban egy soha le nem állított setInterval futott
+    // (minden egyes /protected kérés egy újabb, örökké élő időzítőt indított
+    // - memóriaszivárgás), amely emellett egy nem definiált 'res' változóra
+    // hivatkozott volna hiba esetén. A session hátralévő idejét a kliens a
+    // már meglévő /session-status végponton kérdezheti le, szerveroldali
+    // időzítő nélkül - ezért az itteni setInterval-t eltávolítottuk.
     pool.query('SELECT * FROM customers WHERE customer_id = $1', [req.user.customer_id], (err, result) => {
       if (err) {
         console.error('SQL ERROR:', err);
@@ -689,23 +791,34 @@ app.get('/profile', (req, res) => {
 });
 
 // Registration endpoint
-// [Update this with the registration logic including bcrypt for password hashing]
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MIN_PASSWORD_LENGTH = 8;
+
 app.post('/register', async (req, res) => {
-  //const { username, password } = req.body;
   const { customer, vat, name, email, phone, password } = req.body;
-  const hashedPassword = await bcrypt.hash(password, 10);
+
+  if (!customer || !vat || !name || !email || !phone || !password) {
+    return res.status(400).send('Minden mező kitöltése kötelező');
+  }
+  if (!EMAIL_PATTERN.test(email)) {
+    return res.status(400).send('Érvénytelen e-mail cím');
+  }
+  if (typeof password !== 'string' || password.length < MIN_PASSWORD_LENGTH) {
+    return res.status(400).send(`A jelszónak legalább ${MIN_PASSWORD_LENGTH} karakter hosszúnak kell lennie`);
+  }
 
   try {
-    const result = await pool.query('INSERT INTO customers(customer_name, vat_number, contact_name, email, phone, password) VALUES($1, $2, $3, $4, $5, $6) RETURNING customer_id', [customer, vat, name, email, phone, hashedPassword]);
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await pool.query('INSERT INTO customers(customer_name, vat_number, contact_name, email, phone, password) VALUES($1, $2, $3, $4, $5, $6) RETURNING customer_id', [customer, vat, name, email, phone, hashedPassword]);
     res.redirect('/login');
   } catch (error) {
     if (error.code === '23505') { // PostgreSQL unique violation error code
       res.status(400).send('Email already exists');
     } else {
+      console.error('Error during registration:', error);
       res.status(500).send('An error occurred');
     }
   }
-
 });
 
 // Login route
@@ -716,10 +829,19 @@ app.post('/login', passport.authenticate('local', {
 }));
 
 
-app.post("/logout", (req, res) => {
-  token = null;
-
-  res.redirect("/")
+app.post("/logout", (req, res, next) => {
+  // A korábbi verzió egy sehol máshol nem használt 'token' változót
+  // nullázott, ami nem jelentkeztette ki ténylegesen a felhasználót -
+  // a session cookie érvényben maradt volna kijelentkezés után is.
+  req.logout((err) => {
+    if (err) {
+      return next(err);
+    }
+    req.session.destroy(() => {
+      res.clearCookie('rfq_cookie');
+      res.redirect('/login');
+    });
+  });
 });
 app.get('/session-status', (req, res) => {
   if (req.session) {
@@ -729,16 +851,6 @@ app.get('/session-status', (req, res) => {
     res.json({ timeLeft: 0 });
   }
 });
-
-function logSessionTime(req) {
-  if (req.session && req.session.cookie) {
-    const timeLeft = req.session.cookie.maxAge;
-    // console.log(`rfq_cookie hátralévő ideje: ${timeLeft / 1000} másodperc`);
-  } else {
-    res.redirect('/login');
-    // console.log('Nincs aktív session cookie.');
-  }
-}
 
 async function insertCustomers(num) {
   const insertQuery = `

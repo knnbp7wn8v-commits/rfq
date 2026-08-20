@@ -571,9 +571,14 @@
     document.getElementById("s3").addEventListener('keyup', handleKeyUp);
     document.querySelectorAll('.add').forEach(item => {
         item.addEventListener('click', function (e) {
-            var str = "";
-            var qry = "";
+            // Megjegyzés: korábban itt egy teljes SQL INSERT utasítás lett
+            // szövegként összeállítva és elküldve a szervernek, amit az
+            // validáció nélkül futtatott le - ez SQL injection-t tett
+            // lehetővé. Mostantól csak strukturált adatot (target + sorok)
+            // küldünk, a lekérdezést a szerver állítja össze egy
+            // fehérlistázott tábla-/oszlopdefiníció alapján.
             var target = "";
+            var rows = [];
             if (e.srcElement.id == "tissue_add") {
                 target = "portfolio";
                 const s_tissue = document.querySelectorAll('#tissues option:checked');
@@ -581,20 +586,16 @@
                 const s_gramm = document.querySelectorAll('#grammatura option:checked');
                 for (i = 0; i < s_reel.length; i++) {
                     for (j = 0; j < s_gramm.length; j++) {
-                        str = str + "('" + s_tissue[0].value + "', " + s_reel[i].value + ", " + s_gramm[j].value + "), ";
+                        rows.push({ tissue: s_tissue[0].value, reel: Number(s_reel[i].value), grammatura: Number(s_gramm[j].value) });
                     }
                 }
-                str = str.substring(0, str.length - 2);
-                qry = "INSERT into portfolio (tissue, reel, grammatura) VALUES " + str;
             } else if (e.srcElement.id == "plies_add") {
                 target = "plie_param";
                 const s_plies = document.querySelectorAll('#plies option:checked');
                 const s_diam = document.querySelectorAll('#diameter option:checked');
                 for (i = 0; i < s_diam.length; i++) {
-                    str = str + "('" + s_plies[0].value + "', " + s_diam[i].value + "), ";
+                    rows.push({ plie: s_plies[0].value, diameter: Number(s_diam[i].value) });
                 }
-                str = str.substring(0, str.length - 2);
-                qry = "INSERT into plie_param (plie, diameter) VALUES " + str;
             } else if (e.srcElement.id == "ediamater_add") {
                 target = "ediam_param";
                 const s_height = document.querySelectorAll('#height option:checked');
@@ -604,29 +605,30 @@
                 for (i = 0; i < s_truck.length; i++) {
                     for (j = 0; j < s_tis2.length; j++) {
                         for (g = 0; g < s_weight.length; g++) {
-                            str = str + "(" + s_height[0].value + ", '" + s_truck[i].value + "', '" + s_tis2[j].value + "', " + s_weight[g].value + "), ";
+                            rows.push({ eheight: Number(s_height[0].value), truck: s_truck[i].value, tissue: s_tis2[j].value, weight: Number(s_weight[g].value) });
                         }
                     }
                 }
-                str = str.substring(0, str.length - 2);
-                qry = "INSERT into ediam_param (eheight, truck, tissue, weight) VALUES " + str;
             }
-            fetch('/mw/{"head":"add", "target":"' + target + '", "data":"' + qry + '"}', { method: 'GET' })
+            if (!target || rows.length === 0) {
+                return;
+            }
+            fetch('/mw/' + encodeURIComponent(JSON.stringify({ head: "add", target: target, data: rows })), { method: 'GET' })
                 .then(function (response) {
                     return response.json()
                 })
                 .then(function (data) {
-                    time = Math.trunc(JSON.parse(data).time / 1000);
+                    time = Math.trunc(data.time / 1000);
                     update();
                     switch (e.srcElement.id) {
                         case "tissue_add":
-                            portfolio_render(JSON.parse(data).data);
+                            portfolio_render(data.data);
                             break;
                         case "plies_add":
-                            plie_param_render(JSON.parse(data).data);
+                            plie_param_render(data.data);
                             break;
                         case "ediamater_add":
-                            ediam_param_render(JSON.parse(data).data);
+                            ediam_param_render(data.data);
                             break;
 
                     }
@@ -640,57 +642,54 @@
 
     document.querySelectorAll('.del').forEach(item => {
         item.addEventListener('click', function (e) {
-            var qry = "";
-            var str = "";
+            // Megjegyzés: korábban itt egy teljes SQL DELETE utasítás lett
+            // szövegként összeállítva (validáció/escaping nélkül) - lásd a
+            // fenti '.add' kezelőnél írt megjegyzést. Mostantól csak a
+            // törlendő azonosítók (szám) listáját küldjük.
             var target = "";
+            var ids = [];
             if (e.srcElement.id == "btn2") {
                 target = "portfolio";
-                const ids = document.querySelectorAll('#portfolio input[type="checkbox"]:checked');
-                ids.forEach(function (el) {
+                document.querySelectorAll('#portfolio input[type="checkbox"]:checked').forEach(function (el) {
                     if (el.id != "selectall") {
-                        str = str + "'" + el.id + "', ";
+                        ids.push(Number(el.id));
                     }
                 })
-                str = str.substring(0, str.length - 2);
-                qry = "DELETE from portfolio WHERE id IN (" + str + ")";
             } else if (e.srcElement.id == "plies_del") {
                 target = "plie_param";
-                const ids = document.querySelectorAll('#plie_params input[type="checkbox"]:checked');
-                ids.forEach(function (el) {
+                document.querySelectorAll('#plie_params input[type="checkbox"]:checked').forEach(function (el) {
                     if (el.id != "selectall") {
-                        str = str + "'" + el.id + "', ";
+                        ids.push(Number(el.id));
                     }
-                    str = str.substring(0, str.length - 2);
-                    qry = "DELETE from plie_param WHERE id IN (" + str + ")";
                 })
             } else if (e.srcElement.id == "ediam_del") {
                 target = "ediam_param";
-                const ids = document.querySelectorAll('#ediam_params input[type="checkbox"]:checked');
-                ids.forEach(function (el) {
+                document.querySelectorAll('#ediam_params input[type="checkbox"]:checked').forEach(function (el) {
                     if (el.id != "selectall") {
-                        str = str + "'" + el.id + "', ";
+                        ids.push(Number(el.id));
                     }
-                    str = str.substring(0, str.length - 2);
-                    qry = "DELETE from ediam_param WHERE id IN (" + str + ")";
                 })
             }
-            fetch('/mw/{"head":"delete", "target":"' + target + '", "data":"' + qry + '"}', { method: 'GET' })
+            if (!target || ids.length === 0) {
+                return;
+            }
+            fetch('/mw/' + encodeURIComponent(JSON.stringify({ head: "delete", target: target, data: ids })), { method: 'GET' })
                 .then(function (response) {
                     return response.json()
                 })
                 .then(function (data) {
                     switch (e.srcElement.id) {
                         case "btn2":
-                            portfolio_render(JSON.parse(data).data);
+                            portfolio_render(data.data);
                             break;
                         case "plies_del":
-                            plie_param_render(JSON.parse(data).data);
+                            plie_param_render(data.data);
                             break;
                         case "ediam_del":
-                            ediam_param_render(JSON.parse(data).data);
+                            ediam_param_render(data.data);
                             break;
                     }
-                    console.log(JSON.parse(data).message);
+                    console.log(data.message);
                 })
                 .catch(function (error) {
                     console.log(error);
