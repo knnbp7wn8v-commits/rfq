@@ -16,3 +16,6 @@ archive/
 cert/cert.pem
 cert/csr.pem
 cert/key.pem
+
+# macOS
+.DS_Store
