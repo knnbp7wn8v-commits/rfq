@@ -529,8 +529,6 @@
     var s2 = document.getElementById('s2').value;
     var s3 = document.getElementById('s3').value;
     function filter(from) {
-        const s = this;
-
         s1 = document.getElementById('s1').value;
         s2 = document.getElementById('s2').value;
         s3 = document.getElementById('s3').value;
@@ -542,22 +540,22 @@
                 s3: s3
             }
         }
-        var str = "";
-        var qry = "";
-        var target = "";
         fetch('/mw', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(data)
-        }).then(response => response.json())
+        }).then(checkResponse)
             .then(data => {
                 portfolio_render(data.data);
                 document.getElementById("portfolio_nr").innerHTML = (data.data).length;
                 showMessage(data.message, 'success');
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                Logger.error('Portfólió szűrése sikertelen:', error);
+                showMessage(error.message || 'Hiba történt a szűrés során.', 'error');
+            });
 
     }
     function handleKeyUp() {
@@ -584,8 +582,8 @@
                 const s_tissue = document.querySelectorAll('#tissues option:checked');
                 const s_reel = document.querySelectorAll('#reels option:checked');
                 const s_gramm = document.querySelectorAll('#grammatura option:checked');
-                for (i = 0; i < s_reel.length; i++) {
-                    for (j = 0; j < s_gramm.length; j++) {
+                for (let i = 0; i < s_reel.length; i++) {
+                    for (let j = 0; j < s_gramm.length; j++) {
                         rows.push({ tissue: s_tissue[0].value, reel: Number(s_reel[i].value), grammatura: Number(s_gramm[j].value) });
                     }
                 }
@@ -593,7 +591,7 @@
                 target = "plie_param";
                 const s_plies = document.querySelectorAll('#plies option:checked');
                 const s_diam = document.querySelectorAll('#diameter option:checked');
-                for (i = 0; i < s_diam.length; i++) {
+                for (let i = 0; i < s_diam.length; i++) {
                     rows.push({ plie: s_plies[0].value, diameter: Number(s_diam[i].value) });
                 }
             } else if (e.srcElement.id == "ediamater_add") {
@@ -602,9 +600,9 @@
                 const s_truck = document.querySelectorAll('#truck option:checked');
                 const s_tis2 = document.querySelectorAll('#tissues2 option:checked');
                 const s_weight = document.querySelectorAll('#weight option:checked');
-                for (i = 0; i < s_truck.length; i++) {
-                    for (j = 0; j < s_tis2.length; j++) {
-                        for (g = 0; g < s_weight.length; g++) {
+                for (let i = 0; i < s_truck.length; i++) {
+                    for (let j = 0; j < s_tis2.length; j++) {
+                        for (let g = 0; g < s_weight.length; g++) {
                             rows.push({ eheight: Number(s_height[0].value), truck: s_truck[i].value, tissue: s_tis2[j].value, weight: Number(s_weight[g].value) });
                         }
                     }
@@ -614,9 +612,7 @@
                 return;
             }
             fetch('/mw/' + encodeURIComponent(JSON.stringify({ head: "add", target: target, data: rows })), { method: 'GET' })
-                .then(function (response) {
-                    return response.json()
-                })
+                .then(checkResponse)
                 .then(function (data) {
                     time = Math.trunc(data.time / 1000);
                     update();
@@ -632,9 +628,11 @@
                             break;
 
                     }
+                    showMessage(data.message, 'success');
                 })
                 .catch(function (error) {
-                    console.log(error);
+                    Logger.error('Sor hozzáadása sikertelen:', error);
+                    showMessage(error.message || 'Hiba történt a sor hozzáadása során.', 'error');
                 });
         })
     });
@@ -674,9 +672,7 @@
                 return;
             }
             fetch('/mw/' + encodeURIComponent(JSON.stringify({ head: "delete", target: target, data: ids })), { method: 'GET' })
-                .then(function (response) {
-                    return response.json()
-                })
+                .then(checkResponse)
                 .then(function (data) {
                     switch (e.srcElement.id) {
                         case "btn2":
@@ -689,10 +685,12 @@
                             ediam_param_render(data.data);
                             break;
                     }
-                    console.log(data.message);
+                    Logger.info('Sor törlése sikeres:', data.message);
+                    showMessage(data.message, 'success');
                 })
                 .catch(function (error) {
-                    console.log(error);
+                    Logger.error('Sor törlése sikertelen:', error);
+                    showMessage(error.message || 'Hiba történt a sor törlése során.', 'error');
                 });
         })
     });
@@ -707,21 +705,25 @@
 
     function fakeuser() {
         fetch('/test/{"head":"fakeuser"}', { method: 'GET' })
-            .then(function (response) {
-                return response.json()
-            })
+            .then(checkResponse)
             .then(function (data) {
-                showMessage(data.message);
+                showMessage(data.message, 'success');
             })
+            .catch(function (error) {
+                Logger.error('Teszt felhasználó generálása sikertelen:', error);
+                showMessage(error.message || 'Hiba történt a teszt felhasználó generálása során.', 'error');
+            });
     }
     function fakerfq() {
         fetch('/test/{"head":"fakerfq"}', { method: 'GET' })
-            .then(function (response) {
-                return response.json()
-            })
+            .then(checkResponse)
             .then(function (data) {
-                showMessage(data.message);
+                showMessage(data.message, 'success');
             })
+            .catch(function (error) {
+                Logger.error('Teszt RFQ generálása sikertelen:', error);
+                showMessage(error.message || 'Hiba történt a teszt RFQ generálása során.', 'error');
+            });
     }
 </script>
 

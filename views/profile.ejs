@@ -102,7 +102,6 @@
     <button id="update" type="button" style="width: 200px" onclick="profile_update(<%= data[0].rows[0].customer_id%>) %>">Update</button>
 </div>
 <div id="Requests" class="tabcontent">
-    <% console.log(data[2].rows[0].tissue) %>
     <table id="profile_req">
         <tbody>
         <tr>
@@ -178,12 +177,15 @@
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(data)
-        }).then(response => response.json())
+        }).then(checkResponse)
             .then(data => {
                 showMessage(data.message, data.status);
 
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                Logger.error('Profil frissítése sikertelen:', error);
+                showMessage(error.message || 'Hiba történt a profil frissítése során.', 'error');
+            });
 
     }
 </script>

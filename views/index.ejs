@@ -90,12 +90,12 @@
     // Függvény, amely frissíti a session időt a HTML oldalon
     function updateSessionTime() {
         fetch('/session-status')
-            .then(response => response.json())
+            .then(checkResponse)
             .then(data => {
                 // Frissítjük a session időt a span elemben
                 document.getElementById('session-time').innerText = Math.floor(data.timeLeft) + ' seconds';
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => Logger.error('Session-idő frissítése sikertelen:', error));
     }
 
     // Másodpercenként frissítjük az időt

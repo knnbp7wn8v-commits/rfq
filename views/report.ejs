@@ -104,14 +104,26 @@
             });
             element.classList.add('active');
 
-            const data = await fetchData(chart);
+            let data;
+            try {
+                data = await fetchData(chart);
+            } catch (error) {
+                // Korábban egy sikertelen fetchData() hívás kezeletlen Promise-
+                // elutasítást okozott (report1()-report5() nem várta meg és nem
+                // fogta el a createChart() Promise-át) - a hiba csak a böngésző
+                // konzolján volt látható, a felhasználó nem kapott visszajelzést.
+                Logger.error('Riport adatok betöltése sikertelen:', error);
+                showMessage('Failed to load the report data. Please try again.', 'error');
+                return;
+            }
             const svg = d3.select("svg");
             const margin = { top: 20, right: 30, bottom: 40, left: 40 };
             const width = +svg.attr("width") - margin.left - margin.right;
             const height = +svg.attr("height") - margin.top - margin.bottom;
 
             if (!data || !Array.isArray(data) || data.length === 0) {
-                console.error('No valid data received for chart rendering.');
+                Logger.error('No valid data received for chart rendering.');
+                showMessage('No data available for the selected filters.', 'error');
                 return;
             }
 
@@ -151,7 +163,8 @@
                 }));
                 createLineChart(parsedData, svg, margin, width, height);
             } else {
-                console.error('Unknown chart type.');
+                Logger.error('Unknown chart type:', chart);
+                showMessage('Unknown chart type.', 'error');
             }
         }
 
