@@ -338,7 +338,7 @@ function details(id) {
          confirmPassword.addEventListener('keyup', validatePassword);
       })
       .catch(error => {
-         console.error('Error:', error);
+         Logger.error('Error:', error);
          showMessage(error.message || 'Hiba történt az ügyfél adatainak betöltésekor.', 'error');
       });
 }
@@ -437,13 +437,13 @@ function details_update(id) {
             .then(data2 => {
                users_render(data2.data);
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => Logger.error('Error:', error));
          document.getElementById("c_details").innerHTML = "";
          showMessage(data.message, 'success');
 
       })
       .catch(error => {
-         console.error('Error:', error);
+         Logger.error('Error:', error);
          showMessage(error.message || 'Hiba történt a mentés során.', 'error');
       });
 
@@ -482,7 +482,7 @@ function usersfilter() {
          document.getElementById("customers_nr").innerHTML = (data.data).length;
       })
       .catch(error => {
-         console.error('Error:', error);
+         Logger.error('Error:', error);
          showMessage(error.message || 'Hiba történt a szűrés során.', 'error');
       });
 

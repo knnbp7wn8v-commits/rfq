@@ -57,10 +57,13 @@ function requestforquote() {
     })
         .then(checkResponse)
         .then(data => {
-            console.log('Success:', data.message);
+            Logger.info('Kosárba helyezés sikeres:', data.message);
             document.getElementById("requestsnr").innerHTML = data.counter
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => {
+            Logger.error('Kosárba helyezés sikertelen:', error);
+            showMessage('Failed to add the item to the cart. Please try again.', 'error');
+        });
 }
 
 
@@ -79,7 +82,10 @@ function listrequest() {
         .then(data => {
             renderlist(data.data);
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => {
+            Logger.error('A kosár betöltése sikertelen:', error);
+            showMessage('Failed to load the cart. Please try again.', 'error');
+        });
 
 }
 
@@ -190,11 +196,14 @@ function removefromcart(cartid) {
             document.getElementById("requestsnr").innerHTML = data.counter;
             listrequest();
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => {
+            Logger.error('Tétel törlése a kosárból sikertelen:', error);
+            showMessage('Failed to remove the item from the cart. Please try again.', 'error');
+        });
 
 }
 
-function sendtheemail() {
+async function sendtheemail() {
 
     if (document.getElementById("requestsnr").innerHTML > 0) {
         // A kötelező mezők ellenőrzése: korábban egy "z" számláló minden
@@ -214,7 +223,7 @@ function sendtheemail() {
         ];
         const missingFields = requiredFields.filter(f => document.getElementById(f.id).value === "");
         if (missingFields.length > 0) {
-            alert("The following field(s) cannot be empty: " + missingFields.map(f => f.label).join(", "));
+            showMessage("The following field(s) cannot be empty: " + missingFields.map(f => f.label).join(", "), 'error');
             return;
         }
 
@@ -246,8 +255,11 @@ function sendtheemail() {
             }
         }
 
-        var res = confirm("Are you sure you want to send the RFQ?");
-        if (res == true) {
+        // A natív, JS-szálat blokkoló confirm() helyett egy egyedi, Promise-
+        // alapú, stílusozható megerősítő ablak. Lásd: kod_atvilagitas_kliens.md,
+        // 5. pont ("alert()/confirm() alapú felhasználói interakció").
+        const confirmed = await showConfirm("Are you sure you want to send the RFQ?");
+        if (confirmed) {
             var html = "";
             // A form mezőinek értékét escapeHtml()-en átfuttatva fűzzük a
             // kimenő e-mail HTML törzsébe, hogy egy oda beírt <script>/HTML
@@ -325,8 +337,8 @@ function sendtheemail() {
                                 .then(data => {
 
                                 })
-                                .catch(error => console.error('Error:', error));
-                            alert('Your request has been sent!');
+                                .catch(error => Logger.error('A kosár ürítése a küldés után sikertelen:', error));
+                            showMessage('Your request has been sent!', 'success');
                             document.getElementById("requestsnr").innerHTML = "0";
                             document.getElementById('Tissue').value = "Select"
                             const parentDiv = document.getElementById('form');
@@ -336,11 +348,14 @@ function sendtheemail() {
                             }
                             parentDiv.appendChild(elementToKeep);
                         }, function (error) {
-                            console.error('EmailJS send failed:', error);
-                            alert('FAILED to send the request. Please try again.');
+                            Logger.error('EmailJS send failed:', error);
+                            showMessage('Failed to send the request. Please try again.', 'error');
                         });
                 })
-                .catch(error => console.error('Error:', error));
+                .catch(error => {
+                    Logger.error('A rendelés összeállítása sikertelen:', error);
+                    showMessage('Failed to prepare the request. Please try again.', 'error');
+                });
         }
     }
 

@@ -1,5 +1,6 @@
 require('dotenv').config();
 
+const logger = require('./logger');
 const sessionstore = require('sessionstore');
 const express = require('express');
 const https = require('https');
@@ -43,10 +44,10 @@ const pool = new Pool({
 // Kapcsolat ellenőrzése
 pool.connect()
     .then(() => {
-      console.log('Database connected successfully');
+      logger.info('Database connected successfully');
     })
     .catch(err => {
-      console.error('Database connection error:', err.stack);
+      logger.error('Database connection error:', err.stack);
     });
 
 
@@ -61,7 +62,7 @@ const options = {
   cert: fs.readFileSync('cert.pem')
 };
 https.createServer(options, app).listen(port, () => {
-  console.log('HTTPS server running on port ' + port);
+  logger.info('HTTPS server running on port ' + port);
 });
 app.use(session({
   store: sessionstore.createSessionStore(),
@@ -206,7 +207,7 @@ async function updateUser(data) {
     await pool.query(query, values); // Biztonságos lekérdezés
     return { message: 'User successfully updated' };
   } catch (err) {
-    console.error('Error updating user:', err);
+    logger.error('Error updating user:', err);
     throw new Error('Database error during user update');
   }
 }
@@ -229,7 +230,7 @@ async function updateProfile(data) {
       return {query, values, status: 'inserted' };
     }
   } catch (err) {
-    console.error('Error updating profile:', err);
+    logger.error('Error updating profile:', err);
     return { error: 'database_error' };
   }
 
@@ -248,7 +249,7 @@ async function listUsers() {
     const result = await pool.query(query); // Paraméterezett lekérdezés, ha szükséges
     return result.rows;
   } catch (err) {
-    console.error('Error fetching users:', err);
+    logger.error('Error fetching users:', err);
     throw new Error('Database error during users list retrieval');
   }
 }
@@ -338,7 +339,7 @@ app.post('/users', async (req, res) => {
       res.status(400).send({ message: 'Unknown request type' });
     }
   } catch (error) {
-    console.error('Error processing request:', error);
+    logger.error('Error processing request:', error);
     // A validációs hibák (pl. túl rövid jelszó) explicit 400-as státuszt
     // kapnak (lásd updateUser), minden más hiba a korábbi 500-as alapértelmezést.
     res.status(error.statusCode || 500).send({ message: error.message || 'Error processing request', status: 'error' });
@@ -471,7 +472,7 @@ app.post('/mw', async (req, res) => {
         res.status(400).send({ message: 'Unknown request type' });
       }
     } catch (err) {
-      console.error('Error processing request:', err);
+      logger.error('Error processing request:', err);
       res.status(500).send({ error: 'Internal Server Error' });
     }
   } else {
@@ -650,10 +651,10 @@ app.get('/mw/:data', async (request, response) => {
       }
     } catch (error) {
       if (error instanceof SyntaxError) {
-        console.error('Invalid JSON in /mw/:data:', error);
+        logger.error('Invalid JSON in /mw/:data:', error);
         return response.status(400).send({ message: 'Invalid request payload' });
       }
-      console.error('Error processing request:', error);
+      logger.error('Error processing request:', error);
       response.status(500).send('Internal Server Error');
     }
   } else {
@@ -674,7 +675,7 @@ app.get('/protected', (req, res) => {
     // időzítő nélkül - ezért az itteni setInterval-t eltávolítottuk.
     pool.query('SELECT * FROM customers WHERE customer_id = $1', [req.user.customer_id], (err, result) => {
       if (err) {
-        console.error('SQL ERROR:', err);
+        logger.error('SQL ERROR:', err);
         res.status(500).send('Internal Server Error');
       } else {
         res.render('index.ejs', { data: result.rows[0] });
@@ -690,7 +691,7 @@ app.get('/aszf', (req, res) => {
     // For simplicity, sending text response, but you could also render an HTML page
     pool.query('SELECT * FROM customers WHERE customer_id = $1', [req.user.customer_id], (err, result) => {
       if (err) {
-        console.error('SQL ERROR:', err);
+        logger.error('SQL ERROR:', err);
         res.status(500).send('Internal Server Error');
       } else {
         res.render('aszf.ejs', { data: result.rows[0] });
@@ -706,7 +707,7 @@ app.get('/elerhetoseg', (req, res) => {
     // For simplicity, sending text response, but you could also render an HTML page
     pool.query('SELECT * FROM customers WHERE customer_id = $1', [req.user.customer_id], (err, result) => {
       if (err) {
-        console.error('SQL ERROR:', err);
+        logger.error('SQL ERROR:', err);
         res.status(500).send('Internal Server Error');
       } else {
         res.render('elerhetoseg.ejs', { data: result.rows[0] });
@@ -723,7 +724,7 @@ app.get('/cookie-policy', (req, res) => {
     // For simplicity, sending text response, but you could also render an HTML page
     pool.query('SELECT * FROM customers WHERE customer_id = $1', [req.user.customer_id], (err, result) => {
       if (err) {
-        console.error('SQL ERROR:', err);
+        logger.error('SQL ERROR:', err);
         res.status(500).send('Internal Server Error');
       } else {
         res.render('cookie-policy.ejs', { data: result.rows[0] });
@@ -762,7 +763,7 @@ app.get('/admin', (req, res) => {
         res.render('admin.ejs', { data, time });
       })
       .catch((err) => {
-        console.error('SQL ERROR:', err);
+        logger.error('SQL ERROR:', err);
         res.redirect('/login');
       });
   } else {
@@ -775,7 +776,7 @@ app.get('/report', (req, res) => {
   if (req.isAuthenticated() && req.user.role_id === ROLES.ADMIN) {
     pool.query('SELECT customer_id, customer_name FROM customers', (err, result) => {
       if (err) {
-        console.error('SQL ERROR:', err);
+        logger.error('SQL ERROR:', err);
         res.redirect('/login');
       } else {
         res.render('report.ejs', { data: result });
@@ -800,7 +801,7 @@ app.get('/profile', (req, res) => {
         res.render('profile.ejs', { data });
       })
       .catch((err) => {
-        console.error('SQL ERROR:', err);
+        logger.error('SQL ERROR:', err);
         res.status(500).send('Internal Server Error');
       });
   } else {
@@ -833,7 +834,7 @@ app.post('/register', async (req, res) => {
     if (error.code === '23505') { // PostgreSQL unique violation error code
       res.status(400).send('Email already exists');
     } else {
-      console.error('Error during registration:', error);
+      logger.error('Error during registration:', error);
       res.status(500).send('An error occurred');
     }
   }
@@ -892,7 +893,7 @@ async function insertCustomers(num) {
     try {
       await pool.query(insertQuery, values);
     } catch (error) {
-      console.error('Error inserting customer:', error);
+      logger.error('Error inserting customer:', error);
     }
   }
 }
@@ -1019,7 +1020,7 @@ app.get('/test/:data', async (request, response) => {
     // Megjegyzés: a pool.end() korábban itt szerepelt, de az az egész
     // alkalmazás közös adatbázis-kapcsolatát zárta volna le - ezt eltávolítottuk.
   } catch (err) {
-    console.error('Error processing /test request:', err);
+    logger.error('Error processing /test request:', err);
     response.status(500).send({ message: 'Internal Server Error' });
   }
 });
@@ -1115,7 +1116,7 @@ app.get('/api/report/:data', async (req, res) => {
     if (error instanceof SyntaxError) {
       return res.status(400).json({ message: 'Invalid request payload' });
     }
-    console.error('Error fetching product demand report:', error);
+    logger.error('Error fetching product demand report:', error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 });

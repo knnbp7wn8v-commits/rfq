@@ -35,8 +35,36 @@ function checkResponse(response) {
     });
 }
 
+/**
+ * Egységes kliensoldali naplózás. Minden korábbi közvetlen console.log()/
+ * console.error() hívást ez váltja fel, hogy a naplózás módja (formátum,
+ * szint, esetleges jövőbeli szerverre küldés) egyetlen helyen legyen
+ * módosítható, ne szórtan minden fájlban külön-külön.
+ */
+const Logger = {
+  info(...args) {
+    console.log('[INFO]', new Date().toISOString(), ...args);
+  },
+  warn(...args) {
+    console.warn('[WARN]', new Date().toISOString(), ...args);
+  },
+  error(...args) {
+    console.error('[ERROR]', new Date().toISOString(), ...args);
+  }
+};
+
+/**
+ * Nem tolakodó visszajelző sáv. Ha az oldal HTML-je nem tartalmaz #message
+ * elemet (pl. a vásárlói oldal, index.ejs), a függvény létrehozza azt - így
+ * bármelyik oldalról, sablon-módosítás nélkül hívható.
+ */
 function showMessage(message, className) {
-  const messageDiv = document.getElementById('message');
+  let messageDiv = document.getElementById('message');
+  if (!messageDiv) {
+    messageDiv = document.createElement('div');
+    messageDiv.id = 'message';
+    document.body.appendChild(messageDiv);
+  }
   messageDiv.textContent = message;
   messageDiv.className = `message ${className}`;
   messageDiv.style.display = 'block';
@@ -44,6 +72,65 @@ function showMessage(message, className) {
   setTimeout(() => {
       messageDiv.style.display = 'none';
   }, 3000); // 3 másodperc után eltűnik az üzenet
+}
+
+/**
+ * Egyedi, nem natív megerősítő párbeszédablak. A natív confirm()-ot váltja
+ * ki, amely blokkolja a JS-szálat és nem stílusozható. Promise-t ad vissza:
+ * true, ha a felhasználó megerősítette, false, ha megszakította.
+ * Lásd: kod_atvilagitas_kliens.md, 5. pont ("alert()/confirm() alapú
+ * felhasználói interakció").
+ */
+function showConfirm(message) {
+  return new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.className = 'confirm-overlay';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;'
+      + 'background:rgba(0,0,0,0.5);display:flex;align-items:center;'
+      + 'justify-content:center;z-index:1000;';
+
+    const box = document.createElement('div');
+    box.className = 'confirm-box';
+    box.style.cssText = 'background:#fff;padding:20px 24px;border-radius:5px;'
+      + 'max-width:400px;width:90%;box-shadow:0 2px 10px rgba(0,0,0,0.3);';
+
+    const text = document.createElement('p');
+    text.textContent = message;
+    text.style.cssText = 'margin:0 0 16px 0;';
+
+    const btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;justify-content:flex-end;gap:10px;';
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.type = 'button';
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.style.cssText = 'padding:6px 16px;cursor:pointer;';
+
+    const okBtn = document.createElement('button');
+    okBtn.type = 'button';
+    okBtn.textContent = 'OK';
+    okBtn.style.cssText = 'padding:6px 16px;cursor:pointer;';
+
+    function close(result) {
+      overlay.remove();
+      resolve(result);
+    }
+    okBtn.onclick = () => close(true);
+    cancelBtn.onclick = () => close(false);
+    overlay.onclick = (evt) => {
+      if (evt.target === overlay) {
+        close(false);
+      }
+    };
+
+    btnRow.appendChild(cancelBtn);
+    btnRow.appendChild(okBtn);
+    box.appendChild(text);
+    box.appendChild(btnRow);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+    okBtn.focus();
+  });
 }
 function openTab(evt, tabName) {
   // Declare all variables

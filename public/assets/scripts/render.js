@@ -298,60 +298,70 @@ tissueDiv.appendChild(tissueSelect);
 form.appendChild(tissueDiv);
 
 async function rendercustomer() {
-    const response = await fetch('/mw/{"head":"customer"}');
-    const data = await checkResponse(response);
-    //const data = JSON.parse(rawData.data); // Assuming the server response needs to be parsed as JSON
-    document.getElementById("c1_in").value = data.data[0].customer_name;
-    document.getElementById("c2_in").value = data.data[0].vat_number;
-    document.getElementById("c3_in").value = data.data[0].contact_name;
-    document.getElementById("c4_in").value = data.data[0].email;
-    document.getElementById("c5_in").value = data.data[0].phone;
-    document.getElementById("requestsnr").innerHTML = data.data2[0].count;
+    try {
+        const response = await fetch('/mw/{"head":"customer"}');
+        const data = await checkResponse(response);
+        //const data = JSON.parse(rawData.data); // Assuming the server response needs to be parsed as JSON
+        document.getElementById("c1_in").value = data.data[0].customer_name;
+        document.getElementById("c2_in").value = data.data[0].vat_number;
+        document.getElementById("c3_in").value = data.data[0].contact_name;
+        document.getElementById("c4_in").value = data.data[0].email;
+        document.getElementById("c5_in").value = data.data[0].phone;
+        document.getElementById("requestsnr").innerHTML = data.data2[0].count;
+    } catch (error) {
+        Logger.error('Ügyféladatok betöltése sikertelen:', error);
+        showMessage('Failed to load your customer details. Please reload the page.', 'error');
+    }
 }
 
 async function renderoptions(n, where) {
-    const response = await fetch('/mw/{"head":"option", "data":"' + n + '", "where":"' + where + '"}');
-    const data = await checkResponse(response);
-    time = Math.trunc(data.time / 1000);
-    const selectElement = document.getElementById(n);
-    var option = document.createElement('option');
-    option.value = "Select";
-    option.textContent = "Select";
-    selectElement.appendChild(option);
-    if (n === "Ediameter") {
-        ediameterWeightMap.clear();
-    }
-    data.data.forEach(optionData => {
-        option = document.createElement('option');
-        switch (n) {
-            case "Tissue":
-            option.value = optionData.tissue;
-            option.textContent = optionData.tissue;
-            break;
-            case "Plies":
-            option.value = optionData.plie;
-            option.textContent = optionData.plie;
-            break;
-            case "Grammatura":
-            option.value = optionData.grammatura;
-            option.textContent = optionData.grammatura + " gsm";
-            break;
-            case "Diameter":
-            option.value = optionData.diameter;
-            option.textContent = optionData.diameter + " mm";
-            break;
-            case "Reels":
-            option.value = optionData.reel;
-            option.textContent = optionData.reel + " cm";
-            break;
-            case "Ediameter":
-            option.value = optionData.eheight + " cm (" + optionData.truck + " packs/truck)";
-            option.textContent = optionData.eheight + " cm (" + optionData.truck + " packs/truck)";
-            ediameterWeightMap.set(option.value, optionData.weight);
-            break;
-        }
+    try {
+        const response = await fetch('/mw/{"head":"option", "data":"' + n + '", "where":"' + where + '"}');
+        const data = await checkResponse(response);
+        time = Math.trunc(data.time / 1000);
+        const selectElement = document.getElementById(n);
+        var option = document.createElement('option');
+        option.value = "Select";
+        option.textContent = "Select";
         selectElement.appendChild(option);
-    })
+        if (n === "Ediameter") {
+            ediameterWeightMap.clear();
+        }
+        data.data.forEach(optionData => {
+            option = document.createElement('option');
+            switch (n) {
+                case "Tissue":
+                option.value = optionData.tissue;
+                option.textContent = optionData.tissue;
+                break;
+                case "Plies":
+                option.value = optionData.plie;
+                option.textContent = optionData.plie;
+                break;
+                case "Grammatura":
+                option.value = optionData.grammatura;
+                option.textContent = optionData.grammatura + " gsm";
+                break;
+                case "Diameter":
+                option.value = optionData.diameter;
+                option.textContent = optionData.diameter + " mm";
+                break;
+                case "Reels":
+                option.value = optionData.reel;
+                option.textContent = optionData.reel + " cm";
+                break;
+                case "Ediameter":
+                option.value = optionData.eheight + " cm (" + optionData.truck + " packs/truck)";
+                option.textContent = optionData.eheight + " cm (" + optionData.truck + " packs/truck)";
+                ediameterWeightMap.set(option.value, optionData.weight);
+                break;
+            }
+            selectElement.appendChild(option);
+        })
+    } catch (error) {
+        Logger.error('Opciók betöltése sikertelen (' + n + '):', error);
+        showMessage('Failed to load the available options. Please reload the page.', 'error');
+    }
 }
 
 function removeOptions(selectElement) {
@@ -555,7 +565,7 @@ function Ediameter_select_id(selectobject) {
     const selectedEdiameter = document.getElementById("Ediameter").value;
     const selectedWeight = ediameterWeightMap.get(selectedEdiameter);
     if (selectedWeight === undefined) {
-        console.error('Nem található súlyadat a kiválasztott Ediameter opcióhoz:', selectedEdiameter);
+        Logger.error('Nem található súlyadat a kiválasztott Ediameter opcióhoz:', selectedEdiameter);
     }
     weight_t =  Math.floor(selectedWeight / 274) * document.getElementById("Reels").value.split(" ")[0];
     const label = createElement("label", {},
@@ -779,7 +789,10 @@ function tdscheck() {
             document.getElementById("tds_div").appendChild(tdslbldiv)
         }
       })
-      .catch(error => console.error('Error:', error));
+      .catch(error => {
+        Logger.error('TDS ellenőrzés sikertelen:', error);
+        showMessage('Failed to check the technical data sheet. Please try again.', 'error');
+      });
 }
 function set_orderweight() {
     if (document.getElementById("trucklbl")) {
