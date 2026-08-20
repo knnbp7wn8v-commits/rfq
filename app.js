@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-var sessionstore = require('sessionstore');
+const sessionstore = require('sessionstore');
 const express = require('express');
 const https = require('https');
 const bcrypt = require('bcrypt');
@@ -8,15 +8,18 @@ const session = require('express-session');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const { Pool } = require('pg');
-var flash = require('connect-flash');
+const flash = require('connect-flash');
 const fs = require('fs');
 const bodyParser = require('body-parser');
 const faker = require('faker');
 
 const app = express();
 const port = process.env.APP_PORT || 3000;
-//.env
-const JWT_SECRET = process.env.JWT_SECRET;
+
+// Szerepkör-azonosítók (customers.role_id) - lásd adatbázis 'roles' tábla
+const ROLES = {
+  ADMIN: 3,
+};
 
 // PostgreSQL connection setup
 /* const pool = new Pool({
@@ -57,8 +60,8 @@ const options = {
   key: fs.readFileSync('key.pem'),
   cert: fs.readFileSync('cert.pem')
 };
-https.createServer(options, app).listen(process.env.APP_PORT, () => {
-  console.log('HTTPS server running on port ' + process.env.APP_PORT);
+https.createServer(options, app).listen(port, () => {
+  console.log('HTTPS server running on port ' + port);
 });
 app.use(session({
   store: sessionstore.createSessionStore(),
@@ -67,8 +70,8 @@ app.use(session({
   cookie: {
     maxAge: 3600000,
     rolling: true,
-    secure: true, // this should be true only when you don't want to show it for security reason
-    httpOnly: false, // A cookie nem elérhető JavaScript-en keresztül
+    secure: true, // csak HTTPS kapcsolaton keresztül küldi el a böngésző
+    httpOnly: true, // A cookie nem elérhető JavaScript-en keresztül (XSS elleni védelem)
     sameSite: 'strict' // Megakadályozza a cross-site cookie küldést
   },
   resave: true,
@@ -144,7 +147,7 @@ app.get('/login', (req, res) => {
 });
 function getdata(data) {
   return new Promise((resolve, reject) => {
-    var qry = "";
+    let qry = "";
     switch (data) {
       case "portfolio":
         qry = "SELECT * FROM portfolio";
@@ -155,6 +158,8 @@ function getdata(data) {
       case "ediam_param":
         qry = "SELECT * FROM ediam_param";
         break;
+      default:
+        return reject(new Error(`Invalid target: ${data}`));
     }
     pool.query(
       qry,
@@ -277,39 +282,49 @@ async function filterUsers(data) {
   return { query, values };
 }
 app.post('/users', async (req, res) => {
-  if (req.isAuthenticated()) {
-    const { head, data } = req.body;
-    try {
-      if (head === "update_detalis") {
-        const query = await updateUser(data);
-        const result = await pool.query(query);
-        res.status(200).send({ message: 'User successfully updated' });
-      } else if (head === "list") {
-        const query = await listUsers();
-        const result = await pool.query(query);
-        res.status(200).send({ data: result.rows });
-      } else if (head === "usersfilter") {
-        const { query, values } = await filterUsers(data);
-        const result = await pool.query(query, values);
-        res.status(200).send({ data: result.rows });
-      } else if (head === "profile_update") {
-        const {query, values, status, error} = await updateProfile(data);
-        if (error) {
-          return res.status(500).send({message: 'Database error', status: 'error'});
-        }
-        const result = await pool.query(query, values);
-        if (status === 'updated') {
-          res.status(200).send({data: result.rows, message: 'Profile updated successfully', status: 'success'});
-        } else if (status === 'inserted') {
-          res.status(201).send({data: result.rows, message: 'Profile created successfully', status: 'success'});
-        }
+  if (!req.isAuthenticated()) {
+    return res.status(401).send({ message: 'Not authenticated' });
+  }
+  const { head, data } = req.body;
+  const isAdminManagement = ['update_detalis', 'list', 'usersfilter'].includes(head);
+  if (isAdminManagement && req.user.role_id !== ROLES.ADMIN) {
+    // A felhasználók listázása/módosítása admin jogosultsághoz kötött funkció.
+    return res.status(403).send({ message: 'Forbidden' });
+  }
+  try {
+    if (head === "update_detalis") {
+      // updateUser már lefuttatja a lekérdezést, itt nincs mit újra futtatni.
+      await updateUser(data);
+      res.status(200).send({ message: 'User successfully updated' });
+    } else if (head === "list") {
+      // listUsers már lefuttatja a lekérdezést és a sorokat adja vissza.
+      const rows = await listUsers();
+      res.status(200).send({ data: rows });
+    } else if (head === "usersfilter") {
+      const { query, values } = await filterUsers(data);
+      const result = await pool.query(query, values);
+      res.status(200).send({ data: result.rows });
+    } else if (head === "profile_update") {
+      // A profilját csak a saját bejelentkezett felhasználó módosíthatja -
+      // a kliens által küldött id-t figyelmen kívül hagyjuk (IDOR elleni védelem).
+      const profileData = { ...data, id: req.user.customer_id };
+      const { query, values, status, error } = await updateProfile(profileData);
+      if (error) {
+        return res.status(500).send({ message: 'Database error', status: 'error' });
       }
-      } catch (error) {
-        console.error('Error processing request:', error);
-        res.status(500).send({ message: 'Error processing request', status: 'error' });
+      const result = await pool.query(query, values);
+      if (status === 'updated') {
+        res.status(200).send({ data: result.rows, message: 'Profile updated successfully', status: 'success' });
+      } else if (status === 'inserted') {
+        res.status(201).send({ data: result.rows, message: 'Profile created successfully', status: 'success' });
       }
-
-      }
+    } else {
+      res.status(400).send({ message: 'Unknown request type' });
+    }
+  } catch (error) {
+    console.error('Error processing request:', error);
+    res.status(500).send({ message: 'Error processing request', status: 'error' });
+  }
 });
 
 async function addToCart(userid, data) {
@@ -363,16 +378,20 @@ async function getCustomerDetails(customerId) {
 }
 
 async function buildFilterQuery(data) {
-  let conditions = [];
+  const conditions = [];
+  const values = [];
 
   if (data.s1) {
-    conditions.push(`tissue LIKE '${data.s1}%'`);
+    values.push(data.s1 + '%');
+    conditions.push(`tissue LIKE $${values.length}`);
   }
   if (data.s2) {
-    conditions.push(`reel = ${data.s2}`);
+    values.push(data.s2);
+    conditions.push(`reel = $${values.length}`);
   }
   if (data.s3) {
-    conditions.push(`grammatura = ${data.s3}`);
+    values.push(data.s3);
+    conditions.push(`grammatura = $${values.length}`);
   }
 
   let query = "SELECT * FROM portfolio";
@@ -380,7 +399,7 @@ async function buildFilterQuery(data) {
     query += " WHERE " + conditions.join(" AND ");
   }
 
-  return query;
+  return { query, values };
 }
 app.post('/mw', async (req, res) => {
   if (req.isAuthenticated()) {
@@ -411,15 +430,18 @@ app.post('/mw', async (req, res) => {
         const customerDetails = await getCustomerDetails(data.id);
         res.status(200).send({ message: 'Customer details retrieved', data: customerDetails });
       } else if (head === "filter") {
-        console.log("filter")
-        const query = await buildFilterQuery(data); // await hozzáadva
-        const result = await pool.query(query);
+        const { query, values } = await buildFilterQuery(data);
+        const result = await pool.query(query, values);
         res.status(200).send({ message: 'Filter applied', data: result.rows });
+      } else {
+        res.status(400).send({ message: 'Unknown request type' });
       }
     } catch (err) {
       console.error('Error processing request:', err);
       res.status(500).send({ error: 'Internal Server Error' });
     }
+  } else {
+    res.status(401).send({ message: 'Not authenticated' });
   }
 });
 
@@ -437,6 +459,7 @@ async function addOrDeleteData(query, action) {
 }
 async function getOptions(optionName, whereCondition) {
   let query = "";
+  let values = [];
   switch (optionName) {
     case "Tissue":
       query = "SELECT DISTINCT tissue FROM portfolio";
@@ -445,36 +468,42 @@ async function getOptions(optionName, whereCondition) {
       query = "SELECT * FROM plies";
       break;
     case "Grammatura":
-      query = `SELECT DISTINCT grammatura FROM portfolio WHERE tissue = '${whereCondition}'`;
+      query = "SELECT DISTINCT grammatura FROM portfolio WHERE tissue = $1";
+      values = [whereCondition];
       break;
     case "Diameter":
-      query = `SELECT DISTINCT diameter FROM plie_param WHERE plie = '${whereCondition}'`;
+      query = "SELECT DISTINCT diameter FROM plie_param WHERE plie = $1";
+      values = [whereCondition];
       break;
     case "Reels":
-      query = `SELECT DISTINCT reel FROM portfolio WHERE tissue = '${whereCondition}' ORDER BY reel ASC`;
+      query = "SELECT DISTINCT reel FROM portfolio WHERE tissue = $1 ORDER BY reel ASC";
+      values = [whereCondition];
       break;
     case "Ediameter":
-      query = `SELECT DISTINCT eheight, truck, weight FROM ediam_param WHERE tissue = '${whereCondition}'`;
+      query = "SELECT DISTINCT eheight, truck, weight FROM ediam_param WHERE tissue = $1";
+      values = [whereCondition];
       break;
     default:
       throw new Error("Invalid option name");
   }
-  const result = await pool.query(query);
+  const result = await pool.query(query, values);
   return result.rows;
 }
 async function getCustomerMoreDetails(customerId) {
-  const sql = `SELECT * FROM customers WHERE customers.customer_id = ${customerId}; 
-               SELECT COUNT(cartid) FROM cart WHERE cart.customer_id = ${customerId}`;
-  const result = await pool.query(sql);;
-  return { customerData: result[0].rows, cartCount: result[1].rows };
+  // Két külön, paraméterezett lekérdezés: a pg egyetlen query() hívása
+  // nem ad vissza tömböt több utasítás esetén, ezért nem fűzhetők össze.
+  const customerResult = await pool.query('SELECT * FROM customers WHERE customer_id = $1', [customerId]);
+  const cartResult = await pool.query('SELECT COUNT(cartid) FROM cart WHERE customer_id = $1', [customerId]);
+  return { customerData: customerResult.rows, cartCount: cartResult.rows };
 }
 app.get('/mw/:data', async (request, response) => {
   if (request.isAuthenticated()) {
     const time = getSessionTime(request);
-    const parsedData = JSON.parse(request.params.data);
-    const { target, head } = parsedData;
 
     try {
+      const parsedData = JSON.parse(request.params.data);
+      const { target, head } = parsedData;
+
       if (head === "data") {
         const data = await getDataResponse(target);
         const responseData = { message: "Data successfully retrieved", data: data };
@@ -498,12 +527,18 @@ app.get('/mw/:data', async (request, response) => {
       } else if (head === "cart") {
         // Cart-related logic here
       } else {
-        response.redirect('/login');
+        response.status(400).send({ message: 'Unknown request type' });
       }
     } catch (error) {
+      if (error instanceof SyntaxError) {
+        console.error('Invalid JSON in /mw/:data:', error);
+        return response.status(400).send({ message: 'Invalid request payload' });
+      }
       console.error('Error processing request:', error);
       response.status(500).send('Internal Server Error');
     }
+  } else {
+    response.status(401).send({ message: 'Not authenticated' });
   }
 });
 
@@ -517,13 +552,12 @@ app.get('/protected', (req, res) => {
     }, 1000); // 1 másodpercenként fut
     // Send or render the protected content
     // For simplicity, sending text response, but you could also render an HTML page
-    var sql = "SELECT * from customers WHERE customer_id=" + req.user.customer_id;
-    pool.query(sql, (err, result) => {
+    pool.query('SELECT * FROM customers WHERE customer_id = $1', [req.user.customer_id], (err, result) => {
       if (err) {
-        console.log('SQL ERROR');
+        console.error('SQL ERROR:', err);
+        res.status(500).send('Internal Server Error');
       } else {
         res.render('index.ejs', { data: result.rows[0] });
-        //console.log(result.rows[0])
       }
     })
   } else {
@@ -534,10 +568,10 @@ app.get('/protected', (req, res) => {
 app.get('/aszf', (req, res) => {
   if (req.isAuthenticated()) {
     // For simplicity, sending text response, but you could also render an HTML page
-    var sql = "SELECT * from customers WHERE customer_id=" + req.user.customer_id;
-    pool.query(sql, (err, result) => {
+    pool.query('SELECT * FROM customers WHERE customer_id = $1', [req.user.customer_id], (err, result) => {
       if (err) {
-        console.log('SQL ERROR');
+        console.error('SQL ERROR:', err);
+        res.status(500).send('Internal Server Error');
       } else {
         res.render('aszf.ejs', { data: result.rows[0] });
       }
@@ -550,10 +584,10 @@ app.get('/aszf', (req, res) => {
 app.get('/elerhetoseg', (req, res) => {
   if (req.isAuthenticated()) {
     // For simplicity, sending text response, but you could also render an HTML page
-    var sql = "SELECT * from customers WHERE customer_id=" + req.user.customer_id;
-    pool.query(sql, (err, result) => {
+    pool.query('SELECT * FROM customers WHERE customer_id = $1', [req.user.customer_id], (err, result) => {
       if (err) {
-        console.log('SQL ERROR');
+        console.error('SQL ERROR:', err);
+        res.status(500).send('Internal Server Error');
       } else {
         res.render('elerhetoseg.ejs', { data: result.rows[0] });
       }
@@ -567,10 +601,10 @@ app.get('/elerhetoseg', (req, res) => {
 app.get('/cookie-policy', (req, res) => {
   if (req.isAuthenticated()) {
     // For simplicity, sending text response, but you could also render an HTML page
-    var sql = "SELECT * from customers WHERE customer_id=" + req.user.customer_id;
-    pool.query(sql, (err, result) => {
+    pool.query('SELECT * FROM customers WHERE customer_id = $1', [req.user.customer_id], (err, result) => {
       if (err) {
-        console.log('SQL ERROR');
+        console.error('SQL ERROR:', err);
+        res.status(500).send('Internal Server Error');
       } else {
         res.render('cookie-policy.ejs', { data: result.rows[0] });
       }
@@ -581,35 +615,36 @@ app.get('/cookie-policy', (req, res) => {
   }
 });
 app.get('/admin', (req, res) => {
-  if (req.isAuthenticated() && req.user.role_id === 3) {
+  if (req.isAuthenticated() && req.user.role_id === ROLES.ADMIN) {
     const time = req.session.cookie.expires - new Date(Date.now());
-    // Send or render the protected content
-    // For simplicity, sending text response, but you could also render an HTML page
-    var sql = "SELECT * FROM tissue; SELECT * FROM grammatura; \
-    SELECT * FROM reels; \
-    SELECT * FROM portfolio; \
-    SELECT * FROM plies; \
-    SELECT * from diameter; \
-    SELECT * from plie_param; \
-    SELECT * from eheight; \
-    SELECT * from truck; \
-    SELECT * from weight ORDER BY weight ASC; \
-    SELECT * from ediam_param; \
-    SELECT * from customers WHERE customer_id=" + req.user.customer_id + "; \
-    SELECT customers.customer_id, customers.customer_name, customers.vat_number, customers.contact_name, customers.email, \
-    customers.phone, customers.role_id, customers.date_joined, customers.status, roles.rolename \
-    FROM customers JOIN roles ON customers.role_id = roles.role_id; \
-    SELECT * FROM rfq";
-    pool.query(sql, (err, result) => {
-      if (err) {
-        console.log('SQL ERROR');
+    // Az admin.ejs nézet a data[0]..data[13] tömbindexeket olvassa ki,
+    // ezért a sorrend megegyezik az eredeti, pontosvesszővel elválasztott
+    // lekérdezéssorozattal - csak a customer_id már paraméterezve fut.
+    Promise.all([
+      pool.query('SELECT * FROM tissue'),
+      pool.query('SELECT * FROM grammatura'),
+      pool.query('SELECT * FROM reels'),
+      pool.query('SELECT * FROM portfolio'),
+      pool.query('SELECT * FROM plies'),
+      pool.query('SELECT * FROM diameter'),
+      pool.query('SELECT * FROM plie_param'),
+      pool.query('SELECT * FROM eheight'),
+      pool.query('SELECT * FROM truck'),
+      pool.query('SELECT * FROM weight ORDER BY weight ASC'),
+      pool.query('SELECT * FROM ediam_param'),
+      pool.query('SELECT * FROM customers WHERE customer_id = $1', [req.user.customer_id]),
+      pool.query(`SELECT customers.customer_id, customers.customer_name, customers.vat_number, customers.contact_name, customers.email,
+                  customers.phone, customers.role_id, customers.date_joined, customers.status, roles.rolename
+                  FROM customers JOIN roles ON customers.role_id = roles.role_id`),
+      pool.query('SELECT * FROM rfq'),
+    ])
+      .then((data) => {
+        res.render('admin.ejs', { data, time });
+      })
+      .catch((err) => {
+        console.error('SQL ERROR:', err);
         res.redirect('/login');
-      } else {
-        res.render('admin.ejs', { data: result, time: time });
-      }
-    });
-
-    //res.sendFile(__dirname + '/views/admin.html');
+      });
   } else {
     // Redirect unauthenticated requests to login page
     res.redirect('/login');
@@ -617,12 +652,10 @@ app.get('/admin', (req, res) => {
 });
 
 app.get('/report', (req, res) => {
-  if (req.isAuthenticated() && req.user.role_id === 3) {
-
-    var sql = "SELECT customer_id, customer_name FROM customers;";
-    pool.query(sql, (err, result) => {
+  if (req.isAuthenticated() && req.user.role_id === ROLES.ADMIN) {
+    pool.query('SELECT customer_id, customer_name FROM customers', (err, result) => {
       if (err) {
-        console.log('SQL ERROR');
+        console.error('SQL ERROR:', err);
         res.redirect('/login');
       } else {
         res.render('report.ejs', { data: result });
@@ -636,17 +669,24 @@ app.get('/report', (req, res) => {
 
 app.get('/profile', (req, res) => {
   if (req.isAuthenticated()) {
-    var sql = "SELECT * from customers WHERE customer_id=" + req.user.customer_id + "; SELECT * FROM addresses WHERE u_id = " + req.user.customer_id + "; SELECT * FROM rfq WHERE customer_id = " + req.user.customer_id;
-    pool.query(sql, (err, result) => {
-      if (err) {
-        console.log('SQL ERROR');
-      } else {
-        res.render('profile.ejs', {data: result});
-      }
-    })
+    // A profile.ejs nézet a data[0]..data[2] tömbindexeket olvassa ki
+    // (customers, addresses, rfq), ezért a sorrendet megtartjuk.
+    Promise.all([
+      pool.query('SELECT * FROM customers WHERE customer_id = $1', [req.user.customer_id]),
+      pool.query('SELECT * FROM addresses WHERE u_id = $1', [req.user.customer_id]),
+      pool.query('SELECT * FROM rfq WHERE customer_id = $1', [req.user.customer_id]),
+    ])
+      .then((data) => {
+        res.render('profile.ejs', { data });
+      })
+      .catch((err) => {
+        console.error('SQL ERROR:', err);
+        res.status(500).send('Internal Server Error');
+      });
   } else {
     res.redirect('/login');
-  }})
+  }
+});
 
 // Registration endpoint
 // [Update this with the registration logic including bcrypt for password hashing]
@@ -821,92 +861,130 @@ async function generateRandomRFQ() {
 
   await insertRFQ(data);
 }
-app.get('/test/:data', (request, response) => {
-  if (request.isAuthenticated()) {
-    const parsedData = JSON.parse(request.params.data);
-    const { target, head } = parsedData;
+// Teszt-/demóadat-generáló végpont. Kizárólag admin jogosultsággal és csak
+// nem éles környezetben érhető el - éles (production) build-ben ne fusson.
+app.get('/test/:data', async (request, response) => {
+  if (!request.isAuthenticated() || request.user.role_id !== ROLES.ADMIN) {
+    return response.status(403).send({ message: 'Forbidden' });
+  }
+  if (process.env.NODE_ENV === 'production') {
+    return response.status(404).send({ message: 'Not found' });
+  }
 
-    try {
-      if (head === "fakeuser") {
-        // Adatok beszúrása
-        (async () => {
-          await insertCustomers(10); // Példa: 100 rekord létrehozása
-          console.log('Adatok beszúrása kész.');
-          await pool.end(); // Kapcsolat lezárása
-          res.status(200).send({message: 'Adatok beszúrása kész', status: 'success'});
-        })();
-      } else if (head === "fakerfq") {
-        // Adatok beszúrása
-        (async () => {
-          for (let i = 0; i < 999; i++) {
-            await generateRandomRFQ();
-          }
-          response.status(200).send({message: 'Adatok beszúrása kész', status: 'success'});
-          console.log('Adatok beszúrása kész.');
-          await pool.end(); // Kapcsolat lezárása
-        })();
-      }
-    } catch(err) {
-
-    }
-  }})
-// Termékigény Riport
-app.get('/api/report/:data', async (req, res) => {
-  const parsedData = JSON.parse(req.params.data);
-  console.log(parsedData);
-  const { chart, year, month, time, company } = parsedData;
-  let query = "";
-  let group = ""
-  let where = "";
   try {
-    if (chart === "chart1") {
-      query = `
-            SELECT tissue AS productType, SUM(orderweight) AS totalQuantity
-            FROM rfq
-        `;
-      group = " GROUP BY tissue";
-    } else if (chart === "chart2") {
-      query = `
-            SELECT grammatura AS weight, plies AS layers, SUM(orderweight) AS totalQuantity
-            FROM rfq
-        `;
-      group = " GROUP BY grammatura, layers"
-    } else if (chart === "chart3") {
-      query = `
-            SELECT weeknum, tissue AS productType, SUM(orderweight) AS totalQuantity
-            FROM rfq
-        `;
-      group = " GROUP BY weeknum, tissue ORDER BY weeknum";
-    } else if (chart === "chart4") {
-      query = "SELECT certification, SUM(orderweight) AS totalQuantity FROM rfq";
-      group = " GROUP BY certification"
-    } else if (chart === "chart5") {
-      query = `
-            SELECT EXTRACT(YEAR FROM requestdate) AS year, EXTRACT(MONTH FROM requestdate) AS month, SUM(orderweight) AS totalQuantity
-            FROM rfq
-        `;
-      group = " GROUP BY year, month ORDER BY year, month"
+    const parsedData = JSON.parse(request.params.data);
+    const { head } = parsedData;
+
+    if (head === "fakeuser") {
+      await insertCustomers(10); // Példa: 10 rekord létrehozása
+      response.status(200).send({ message: 'Adatok beszúrása kész', status: 'success' });
+    } else if (head === "fakerfq") {
+      for (let i = 0; i < 999; i++) {
+        await generateRandomRFQ();
+      }
+      response.status(200).send({ message: 'Adatok beszúrása kész', status: 'success' });
+    } else {
+      response.status(400).send({ message: 'Unknown request type' });
     }
-    if (month !== "" && year !== "") {
-      where = "WHERE EXTRACT(YEAR FROM requestdate) = " + year + " AND EXTRACT(MONTH FROM requestdate) = " + month;
-    } else if (year !== "") {
-      where = where + " WHERE EXTRACT(YEAR FROM requestdate) = " + year;
+    // Megjegyzés: a pool.end() korábban itt szerepelt, de az az egész
+    // alkalmazás közös adatbázis-kapcsolatát zárta volna le - ezt eltávolítottuk.
+  } catch (err) {
+    console.error('Error processing /test request:', err);
+    response.status(500).send({ message: 'Internal Server Error' });
+  }
+});
+// Termékigény Riport
+// Az elérhető "time" ablakok fehérlistája - lásd views/report.ejs #time select.
+const REPORT_TIME_WINDOWS = new Set(['7 days', '30 days', '3 month', '6 month', '1 year']);
+
+app.get('/api/report/:data', async (req, res) => {
+  // Ez az API a /report (admin) oldal diagramjait szolgálja ki, ezért ugyanaz
+  // a jogosultsági szint vonatkozik rá, mint a /report route-ra.
+  if (!req.isAuthenticated() || req.user.role_id !== ROLES.ADMIN) {
+    return res.status(403).json({ message: 'Forbidden' });
+  }
+
+  try {
+    const parsedData = JSON.parse(req.params.data);
+    const { chart, year, month, time, company } = parsedData;
+
+    let query = "";
+    let group = "";
+    switch (chart) {
+      case "chart1":
+        query = "SELECT tissue AS productType, SUM(orderweight) AS totalQuantity FROM rfq";
+        group = " GROUP BY tissue";
+        break;
+      case "chart2":
+        query = "SELECT grammatura AS weight, plies AS layers, SUM(orderweight) AS totalQuantity FROM rfq";
+        group = " GROUP BY grammatura, layers";
+        break;
+      case "chart3":
+        query = "SELECT weeknum, tissue AS productType, SUM(orderweight) AS totalQuantity FROM rfq";
+        group = " GROUP BY weeknum, tissue ORDER BY weeknum";
+        break;
+      case "chart4":
+        query = "SELECT certification, SUM(orderweight) AS totalQuantity FROM rfq";
+        group = " GROUP BY certification";
+        break;
+      case "chart5":
+        query = "SELECT EXTRACT(YEAR FROM requestdate) AS year, EXTRACT(MONTH FROM requestdate) AS month, SUM(orderweight) AS totalQuantity FROM rfq";
+        group = " GROUP BY year, month ORDER BY year, month";
+        break;
+      default:
+        return res.status(400).json({ message: 'Unknown chart type' });
     }
-    if (time !== "") {
-      where = where + " WHERE requestdate >= CURRENT_DATE - INTERVAL '" + time + "'";
-    }
-    if (company !== "") {
-      if (where !== "" ) {
-        where = where + " AND customer_id = " + company;
-      } else {
-        where = " WHERE customer_id = " + company;
+
+    // Minden szűrőfeltétel paraméterezve kerül a lekérdezésbe (SQL injection védelem).
+    const conditions = [];
+    const values = [];
+
+    if (year) {
+      const yearNum = parseInt(year, 10);
+      if (!Number.isInteger(yearNum)) {
+        return res.status(400).json({ message: 'Invalid year' });
+      }
+      values.push(yearNum);
+      conditions.push(`EXTRACT(YEAR FROM requestdate) = $${values.length}`);
+
+      if (month) {
+        const monthNum = parseInt(month, 10);
+        if (!Number.isInteger(monthNum)) {
+          return res.status(400).json({ message: 'Invalid month' });
+        }
+        values.push(monthNum);
+        conditions.push(`EXTRACT(MONTH FROM requestdate) = $${values.length}`);
       }
     }
-    query = query + " " + where + group;
-    console.log(query);
-    const result = await pool.query(query);
+
+    if (time) {
+      // A 'time' értéket egy zárt fehérlistával validáljuk, csak utána
+      // kerülhet (szó szerinti egyezésként) az INTERVAL kifejezésbe -
+      // paraméterként nem adható át, mert a PostgreSQL INTERVAL literál
+      // szintaxisa nem fogadja el a $n helyettesítést ezen a pozíción.
+      if (!REPORT_TIME_WINDOWS.has(time)) {
+        return res.status(400).json({ message: 'Invalid time window' });
+      }
+      conditions.push(`requestdate >= CURRENT_DATE - INTERVAL '${time}'`);
+    }
+
+    if (company) {
+      const companyId = parseInt(company, 10);
+      if (!Number.isInteger(companyId)) {
+        return res.status(400).json({ message: 'Invalid company' });
+      }
+      values.push(companyId);
+      conditions.push(`customer_id = $${values.length}`);
+    }
+
+    const where = conditions.length > 0 ? ' WHERE ' + conditions.join(' AND ') : '';
+    const fullQuery = query + where + group;
+    const result = await pool.query(fullQuery, values);
     res.status(200).json(result.rows);
   } catch (error) {
+    if (error instanceof SyntaxError) {
+      return res.status(400).json({ message: 'Invalid request payload' });
+    }
     console.error('Error fetching product demand report:', error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
