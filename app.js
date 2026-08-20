@@ -99,11 +99,15 @@ passport.use('local', new LocalStrategy(
       if (result.rows.length > 0) {
         const user = result.rows[0];
         const isMatch = await bcrypt.compare(password, user.password);
-        if (isMatch) {
-          return done(null, user);
-        } else {
+        if (!isMatch) {
           return done(null, false, { message: 'Incorrect password.' });
         }
+        // Az önregisztrált felhasználók fiókját admin oldalról kell
+        // aktiválni (customers.status) - jóváhagyás előtt nem léphetnek be.
+        if (!user.status) {
+          return done(null, false, { message: 'A fiók még nincs aktiválva. Kérjük, várja meg az adminisztrátor jóváhagyását.' });
+        }
+        return done(null, user);
       } else {
         return done(null, false, { message: 'Incorrect username.' });
       }
