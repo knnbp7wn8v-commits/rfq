@@ -199,30 +199,41 @@
             </div>
         </div>
     </div>
-    <div id="Parameters" class="tabcontent">
-        <div id="div_3">
-            <div id="div_3a">
-                <label class="labelclass">Plies and diameters</label>
-                <select id="plies" size="5">
-                    <% data[4].rows.forEach(function(pl) { %>
-                        <option value="<%= pl.plie %>">
-                            <%= pl.plie %>
-                        </option>
-                        <% }); %>
-                </select>
-                <br> <br>
-                <select id="diameter" size="4" multiple>
-                    <% data[5].rows.forEach(function(d) { %>
-                        <option value="<%= d.diameter %>">
-                            <%= d.diameter %> cm
-                        </option>
-                        <% }); %>
-                </select><br>
-                <button id="plies_add" class="add">Add</button>
+    <div id="Parameters" class="tabcontent modern-ui content">
+        <div class="params-grid">
+        <div id="div_3" class="param-card">
+            <div class="content-head">
+                <div class="content-title"><h1>Plies and diameters</h1></div>
             </div>
-            <div id="div_3b">
-                <div id="div_3b1">
-                    <table id="plie_params">
+            <div id="div_3a" class="param-form">
+                <div class="field">
+                    <label class="labelclass">Plie</label>
+                    <select id="plies" size="5">
+                        <% data[4].rows.forEach(function(pl) { %>
+                            <option value="<%= pl.plie %>">
+                                <%= pl.plie %>
+                            </option>
+                            <% }); %>
+                    </select>
+                </div>
+                <div class="field">
+                    <label class="labelclass">Diameter</label>
+                    <select id="diameter" size="4" multiple>
+                        <% data[5].rows.forEach(function(d) { %>
+                            <option value="<%= d.diameter %>">
+                                <%= d.diameter %> cm
+                            </option>
+                            <% }); %>
+                    </select>
+                </div>
+                <button id="plies_add" class="add btn-primary">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    Add
+                </button>
+            </div>
+            <div id="div_3b" class="param-table-wrap">
+                <div id="div_3b1" class="table-card">
+                    <table id="plie_params" class="data-table">
                         <tr>
                             <th>Select All<br><input type="checkbox" id="selectall" value="plie_params"
                                     onchange="selectall(this)" /></th>
@@ -242,54 +253,67 @@
                             <% }); %>
                     </table>
                 </div>
-                <div id="div_3b2">
-                    <button id="plies_del" class="del">Delete</button>
+                <div id="div_3b2" class="head-actions">
+                    <button id="plies_del" class="del btn-ghost">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        Delete
+                    </button>
                 </div>
             </div>
         </div>
-        <div id="div_4">
-            <div id="div_4a">
-                <label class="labelclass">External diameter</label>
-                <label class="labelclass">Height</label>
-                <select id="height" size="5">
-                    <% data[7].rows.forEach(function(h) { %>
-                        <option value="<%= h.eheight %>">
-                            <%= h.eheight %> cm
-                        </option>
-                        <% }); %>
-                </select>
-                <br>
-                <label class="labelclass">Trucks</label>
-                <select id="truck" size="5" multiple>
-                    <% data[8].rows.forEach(function(t) { %>
-                        <option value="<%= t.truck %>">
-                            <%= t.truck %>
-                        </option>
-                        <% }); %>
-                </select>
-                <br>
-                <label class="labelclass">Tissues</label>
-                <select id="tissues2" size="5">
-                    <% data[0].rows.forEach(function(tissue) { %>
-                        <option value="<%= tissue.tissue %>">
-                            <%= tissue.tissue %>
-                        </option>
-                        <% }); %>
-                </select><br>
-                <label class="labelclass">Weight</label>
-                <select id="weight" size="5" multiple>
-                    <% data[9].rows.forEach(function(w) { %>
-                        <option value="<%= w.weight %>">
-                            <%= w.weight %> kg
-                        </option>
-                        <% }); %>
-                </select>
-                <br>
-                <button id="ediamater_add" class="add">Add</button>
+        <div id="div_4" class="param-card">
+            <div class="content-head">
+                <div class="content-title"><h1>External diameter / Height</h1></div>
             </div>
-            <div id="div_4b">
-                <div id="div_4b1">
-                    <table id="ediam_params">
+            <div id="div_4a" class="param-form">
+                <div class="field">
+                    <label class="labelclass">Height</label>
+                    <select id="height" size="5">
+                        <% data[7].rows.forEach(function(h) { %>
+                            <option value="<%= h.eheight %>">
+                                <%= h.eheight %> cm
+                            </option>
+                            <% }); %>
+                    </select>
+                </div>
+                <div class="field">
+                    <label class="labelclass">Trucks</label>
+                    <select id="truck" size="5" multiple>
+                        <% data[8].rows.forEach(function(t) { %>
+                            <option value="<%= t.truck %>">
+                                <%= t.truck %>
+                            </option>
+                            <% }); %>
+                    </select>
+                </div>
+                <div class="field">
+                    <label class="labelclass">Tissues</label>
+                    <select id="tissues2" size="5">
+                        <% data[0].rows.forEach(function(tissue) { %>
+                            <option value="<%= tissue.tissue %>">
+                                <%= tissue.tissue %>
+                            </option>
+                            <% }); %>
+                    </select>
+                </div>
+                <div class="field">
+                    <label class="labelclass">Weight</label>
+                    <select id="weight" size="5" multiple>
+                        <% data[9].rows.forEach(function(w) { %>
+                            <option value="<%= w.weight %>">
+                                <%= w.weight %> kg
+                            </option>
+                            <% }); %>
+                    </select>
+                </div>
+                <button id="ediamater_add" class="add btn-primary">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    Add
+                </button>
+            </div>
+            <div id="div_4b" class="param-table-wrap">
+                <div id="div_4b1" class="table-card">
+                    <table id="ediam_params" class="data-table">
                         <tr>
                             <th>Select All<br><input type="checkbox" id="selectall" value="ediam_params"
                                     onchange="selectall(this)" /></th>
@@ -317,134 +341,180 @@
                             <% }); %>
                     </table>
                 </div>
-                <div id="div_4b2">
-                    <button id="ediam_del" class="del">Delete</button>
+                <div id="div_4b2" class="head-actions">
+                    <button id="ediam_del" class="del btn-ghost">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        Delete
+                    </button>
                 </div>
             </div>
         </div>
-    </div>
-    <div id="Others" class="tabcontent">
-        <div id="div_o_1">
-            <label class="labelclass selectlabel">Tissues</label>
-            <select id="o_tissues" size="5">
-                <% data[0].rows.forEach(function(tissue) { %>
-                    <option value="<%= tissue.tissue %>">
-                        <%= tissue.tissue %>
-                    </option>
-                    <% }); %>
-            </select><br>
-            <button id="o_tis_add" class="oadd">Add</button>
-            <button id="o_tis_del" class="odel">Delete</button>
-            <br>
-            <label class="labelclass selectlabel">Reels</label>
-            <select id="o_reels" multiple size="10">
-                <% data[2].rows.forEach(function(r) { %>
-                    <option value="<%= r.reels %>">
-                        <%= r.reels %>
-                    </option>
-                    <% }); %>
-            </select><br>
-            <button id="o_reel_add" class="oadd">Add</button>
-            <button id="o_reel_del" class="odel">Delete</button>
-            <br>
-            <label class="labelclass selectlabel">Grammatura</label>
-            <select id="o_grammatura" multiple size="10">
-                <% data[1].rows.forEach(function(gr) { %>
-                    <option value="<%= gr.grammatura %>">
-                        <%= gr.grammatura %> gsm
-                    </option>
-                    <% }); %>
-            </select><br>
-            <button id="o_gram_add" class="oadd">Add</button>
-            <button id="o_gram_del" class="odel">Delete</button>
-            <br>
-        </div>
-        <div id="div_o_2">
-            <label class="labelclass">Plies and diameters</label>
-            <select id="o_plies" size="5">
-                <% data[4].rows.forEach(function(pl) { %>
-                    <option value="<%= pl.plie %>">
-                        <%= pl.plie %>
-                    </option>
-                    <% }); %>
-            </select>
-            <button id="o_pli_add" class="oadd">Add</button>
-            <button id="o_pli_del" class="odel">Delete</button>
-            <br> <br>
-            <select id="o_diameter" size="4">
-                <% data[5].rows.forEach(function(d) { %>
-                    <option value="<%= d.diameter %>">
-                        <%= d.diameter %> cm
-                    </option>
-                    <% }); %>
-            </select><br>
-            <button id="o_dia_add" class="oadd">Add</button>
-            <button id="o_dia_del" class="odel">Delete</button>
-            <br>
-        </div>
-        <div id="div_o_3">
-            <label class="labelclass">External diameter</label>
-            <label class="labelclass">Height</label>
-            <select id="o_height" size="5">
-                <% data[7].rows.forEach(function(h) { %>
-                    <option value="<%= h.eheight %>">
-                        <%= h.eheight %> cm
-                    </option>
-                    <% }); %>
-            </select>
-            <br>
-            <button id="o_hei_add" class="oadd">Add</button>
-            <button id="o_hei_del" class="odel">Delete</button>
-            <br>
-            <label class="labelclass">Trucks</label>
-            <select id="o_truck" size="5" multiple>
-                <% data[8].rows.forEach(function(t) { %>
-                    <option value="<%= t.truck %>">
-                        <%= t.truck %>
-                    </option>
-                    <% }); %>
-            </select>
-            <br>
-            <button id="o_tru_add" class="oadd">Add</button>
-            <button id="o_tru_del" class="odel">Delete</button>
-            <br>
-            <label class="labelclass">Weight</label>
-            <select id="o_weight" size="5" multiple>
-                <% data[9].rows.forEach(function(w) { %>
-                    <option value="<%= w.weight %>">
-                        <%= w.weight %> kg
-                    </option>
-                    <% }); %>
-            </select>
-            <br>
-            <button id="o_wei_add" class="oadd">Add</button>
-            <button id="o_wei_del" class="odel">Delete</button>
-            <br>
         </div>
     </div>
-    <div id="Customers" class="tabcontent">
-        <div id="c_data">
-            <label class="labelclass">Customers (<span id="customers_nr">
-                    <%= data[12].rowCount %>
-                </span>)</label><br>
-            <table id="customers">
+    <div id="Others" class="tabcontent modern-ui content">
+        <div class="ref-grid">
+        <div id="div_o_1" class="ref-card">
+            <div class="ref-list-block">
+                <label class="labelclass selectlabel">Tissues</label>
+                <select id="o_tissues" size="5">
+                    <% data[0].rows.forEach(function(tissue) { %>
+                        <option value="<%= tissue.tissue %>">
+                            <%= tissue.tissue %>
+                        </option>
+                        <% }); %>
+                </select>
+                <div class="button-row">
+                    <button id="o_tis_add" class="oadd">Add</button>
+                    <button id="o_tis_del" class="odel">Delete</button>
+                </div>
+            </div>
+            <div class="ref-list-block">
+                <label class="labelclass selectlabel">Reels</label>
+                <select id="o_reels" multiple size="10">
+                    <% data[2].rows.forEach(function(r) { %>
+                        <option value="<%= r.reels %>">
+                            <%= r.reels %>
+                        </option>
+                        <% }); %>
+                </select>
+                <div class="button-row">
+                    <button id="o_reel_add" class="oadd">Add</button>
+                    <button id="o_reel_del" class="odel">Delete</button>
+                </div>
+            </div>
+            <div class="ref-list-block">
+                <label class="labelclass selectlabel">Grammatura</label>
+                <select id="o_grammatura" multiple size="10">
+                    <% data[1].rows.forEach(function(gr) { %>
+                        <option value="<%= gr.grammatura %>">
+                            <%= gr.grammatura %> gsm
+                        </option>
+                        <% }); %>
+                </select>
+                <div class="button-row">
+                    <button id="o_gram_add" class="oadd">Add</button>
+                    <button id="o_gram_del" class="odel">Delete</button>
+                </div>
+            </div>
+        </div>
+        <div id="div_o_2" class="ref-card">
+            <div class="ref-list-block">
+                <label class="labelclass">Plies</label>
+                <select id="o_plies" size="5">
+                    <% data[4].rows.forEach(function(pl) { %>
+                        <option value="<%= pl.plie %>">
+                            <%= pl.plie %>
+                        </option>
+                        <% }); %>
+                </select>
+                <div class="button-row">
+                    <button id="o_pli_add" class="oadd">Add</button>
+                    <button id="o_pli_del" class="odel">Delete</button>
+                </div>
+            </div>
+            <div class="ref-list-block">
+                <label class="labelclass">Diameters</label>
+                <select id="o_diameter" size="4">
+                    <% data[5].rows.forEach(function(d) { %>
+                        <option value="<%= d.diameter %>">
+                            <%= d.diameter %> cm
+                        </option>
+                        <% }); %>
+                </select>
+                <div class="button-row">
+                    <button id="o_dia_add" class="oadd">Add</button>
+                    <button id="o_dia_del" class="odel">Delete</button>
+                </div>
+            </div>
+        </div>
+        <div id="div_o_3" class="ref-card">
+            <div class="ref-list-block">
+                <label class="labelclass">External diameter Height</label>
+                <select id="o_height" size="5">
+                    <% data[7].rows.forEach(function(h) { %>
+                        <option value="<%= h.eheight %>">
+                            <%= h.eheight %> cm
+                        </option>
+                        <% }); %>
+                </select>
+                <div class="button-row">
+                    <button id="o_hei_add" class="oadd">Add</button>
+                    <button id="o_hei_del" class="odel">Delete</button>
+                </div>
+            </div>
+            <div class="ref-list-block">
+                <label class="labelclass">Trucks</label>
+                <select id="o_truck" size="5" multiple>
+                    <% data[8].rows.forEach(function(t) { %>
+                        <option value="<%= t.truck %>">
+                            <%= t.truck %>
+                        </option>
+                        <% }); %>
+                </select>
+                <div class="button-row">
+                    <button id="o_tru_add" class="oadd">Add</button>
+                    <button id="o_tru_del" class="odel">Delete</button>
+                </div>
+            </div>
+            <div class="ref-list-block">
+                <label class="labelclass">Weight</label>
+                <select id="o_weight" size="5" multiple>
+                    <% data[9].rows.forEach(function(w) { %>
+                        <option value="<%= w.weight %>">
+                            <%= w.weight %> kg
+                        </option>
+                        <% }); %>
+                </select>
+                <div class="button-row">
+                    <button id="o_wei_add" class="oadd">Add</button>
+                    <button id="o_wei_del" class="odel">Delete</button>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+    <div id="Customers" class="tabcontent modern-ui content">
+        <div id="c_data" class="table-card">
+            <div class="content-head" style="padding: 18px 18px 0;">
+                <div class="content-title">
+                    <h1>Customers</h1>
+                    <span class="count">(<span id="customers_nr"><%= data[12].rowCount %></span>)</span>
+                </div>
+            </div>
+            <table id="customers" class="data-table">
                 <tr>
-                    <th>Customer Name<br><input type="search" id="s4" name="q" placeholder="Tissue filter"
-                            aria-label="Search through site content" /></th>
-                    <th>VAT Number<br><input type="search" id="s5" name="q" placeholder="Reel filter"
-                            aria-label="Search through site content" /></th>
-                    <th>Contact Name<br><input type="search" id="s6" name="q" placeholder="Grammatura filter"
-                            aria-label="Search through site content" /></th>
-                    <th>Email<br><input type="search" id="s7" name="q" placeholder="Grammatura filter"
-                            aria-label="Search through site content" /></th>
-                    <th>Phone<br><input type="search" id="s8" name="q" placeholder="Grammatura filter"
-                            aria-label="Search through site content" /></th>
-                    <th>Data Joined<br><input type="search" id="s9" name="q" placeholder="Grammatura filter"
-                            aria-label="Search through site content" /></th>
-                    <th>Role<br><input type="search" id="s10" name="q" placeholder="Grammatura filter"
-                            aria-label="Search through site content" /></th>
-                    <th>Status<br><input type="search" id="s11" name="q" placeholder="Grammatura filter"
-                            aria-label="Search through site content" /></th>
+                    <th>
+                        <span class="th-label">Customer Name</span>
+                        <span class="th-search"><input type="search" id="s4" name="q" placeholder="Customer filter" aria-label="Search through site content" /></span>
+                    </th>
+                    <th>
+                        <span class="th-label">VAT Number</span>
+                        <span class="th-search"><input type="search" id="s5" name="q" placeholder="VAT filter" aria-label="Search through site content" /></span>
+                    </th>
+                    <th>
+                        <span class="th-label">Contact Name</span>
+                        <span class="th-search"><input type="search" id="s6" name="q" placeholder="Contact filter" aria-label="Search through site content" /></span>
+                    </th>
+                    <th>
+                        <span class="th-label">Email</span>
+                        <span class="th-search"><input type="search" id="s7" name="q" placeholder="Email filter" aria-label="Search through site content" /></span>
+                    </th>
+                    <th>
+                        <span class="th-label">Phone</span>
+                        <span class="th-search"><input type="search" id="s8" name="q" placeholder="Phone filter" aria-label="Search through site content" /></span>
+                    </th>
+                    <th>
+                        <span class="th-label">Data Joined</span>
+                        <span class="th-search"><input type="search" id="s9" name="q" placeholder="Date filter" aria-label="Search through site content" /></span>
+                    </th>
+                    <th>
+                        <span class="th-label">Role</span>
+                        <span class="th-search"><input type="search" id="s10" name="q" placeholder="Role filter" aria-label="Search through site content" /></span>
+                    </th>
+                    <th>
+                        <span class="th-label">Status</span>
+                        <span class="th-search"><input type="search" id="s11" name="q" placeholder="Status filter" aria-label="Search through site content" /></span>
+                    </th>
                 </tr>
                 <% data[12].rows.forEach(function(pr) { %>
                     <tr id="<%= pr.customer_id %>" onclick='details("<%= pr.customer_id %>")'>
@@ -477,32 +547,33 @@
                     <% }); %>
             </table>
         </div>
-        <div id="c_details">
-
-        </div>
+        <div id="c_details" class="detail-card"></div>
     </div>
-    <div id="Requests" class="tabcontent">
-        <div style="overflow-x: scroll;">
-            <label class="labelclass">Requests (<span id="requests_nr">
-                    <%= data[13].rowCount %>
-                </span>)</label>
-            <table id="request">
+    <div id="Requests" class="tabcontent modern-ui content">
+        <div class="table-card">
+            <div class="content-head" style="padding: 18px 18px 0;">
+                <div class="content-title">
+                    <h1>Requests</h1>
+                    <span class="count">(<span id="requests_nr"><%= data[13].rowCount %></span>)</span>
+                </div>
+            </div>
+            <table id="request" class="data-table">
                 <tr>
-                    <th>Customer<br><input type="search" id="s20" name="q" placeholder="Customer filter"/></th>
-                    <th>Tissue<br><input type="search" id="s2" name="q" placeholder="Tissue filter"/></th>
-                    <th>Plies<br><input type="search" id="s3" name="q" placeholder="Plies filter"/></th>
-                    <th>Grammatura<br><input type="search" id="s3" name="q" placeholder="Grammatura filter"/></th>
-                    <th>Diameter<br><input type="search" id="s3" name="q" placeholder="Diameter filter"/></th>
-                    <th>Reels<br><input type="search" id="s3" name="q" placeholder="Reels filter"/></th>
-                    <th>Pack 1<br><input type="search" id="s3" name="q" placeholder="Pack 1 filter"/></th>
-                    <th>Pack 2<br><input type="search" id="s3" name="q" placeholder="Pack 2 filter"/></th>
-                    <th>Requested Weight<br><input type="search" id="s3" name="q" placeholder="Weight filter"/></th>
-                    <th>Height<br><input type="search" id="s3" name="q" placeholder="Height filter"/></th>
-                    <th>Certfication<br><input type="search" id="s3" name="q" placeholder="Certification filter"/></th>
-                    <th>Requested Week<br><input type="search" id="s3" name="q" placeholder="Week filter"/></th>
-                    <th>TDS<br><input type="search" id="s3" name="q" placeholder="TDS filter"/></th>
-                    <th>Comment<br><input type="search" id="s3" name="q" placeholder="Comment filter"/></th>
-                    <th>Date<br><input type="search" id="s3" name="q" placeholder="Date filter"/></th>
+                    <th><span class="th-label">Customer</span><span class="th-search"><input type="search" id="s20" name="q" placeholder="Customer filter"/></span></th>
+                    <th><span class="th-label">Tissue</span><span class="th-search"><input type="search" id="s21" name="q" placeholder="Tissue filter"/></span></th>
+                    <th><span class="th-label">Plies</span><span class="th-search"><input type="search" id="s22" name="q" placeholder="Plies filter"/></span></th>
+                    <th><span class="th-label">Grammatura</span><span class="th-search"><input type="search" id="s23" name="q" placeholder="Grammatura filter"/></span></th>
+                    <th><span class="th-label">Diameter</span><span class="th-search"><input type="search" id="s24" name="q" placeholder="Diameter filter"/></span></th>
+                    <th><span class="th-label">Reels</span><span class="th-search"><input type="search" id="s25" name="q" placeholder="Reels filter"/></span></th>
+                    <th><span class="th-label">Pack 1</span><span class="th-search"><input type="search" id="s26" name="q" placeholder="Pack 1 filter"/></span></th>
+                    <th><span class="th-label">Pack 2</span><span class="th-search"><input type="search" id="s27" name="q" placeholder="Pack 2 filter"/></span></th>
+                    <th><span class="th-label">Requested Weight</span><span class="th-search"><input type="search" id="s28" name="q" placeholder="Weight filter"/></span></th>
+                    <th><span class="th-label">Height</span><span class="th-search"><input type="search" id="s29" name="q" placeholder="Height filter"/></span></th>
+                    <th><span class="th-label">Certfication</span><span class="th-search"><input type="search" id="s30" name="q" placeholder="Certification filter"/></span></th>
+                    <th><span class="th-label">Requested Week</span><span class="th-search"><input type="search" id="s31" name="q" placeholder="Week filter"/></span></th>
+                    <th><span class="th-label">TDS</span><span class="th-search"><input type="search" id="s32" name="q" placeholder="TDS filter"/></span></th>
+                    <th><span class="th-label">Comment</span><span class="th-search"><input type="search" id="s33" name="q" placeholder="Comment filter"/></span></th>
+                    <th><span class="th-label">Date</span><span class="th-search"><input type="search" id="s34" name="q" placeholder="Date filter"/></span></th>
                 </tr>
                 <% data[13].rows.forEach(function(pr) { %>
                     <tr>
@@ -557,9 +628,15 @@
             </table>
         </div>
     </div>
-    <div id="Test" class="tabcontent">
-        <button id="fakeuser" onclick="fakeuser()">Fakes users</button>
-        <button id="fakerfq" onclick="fakerfq()">Fakes RFQ</button>
+    <div id="Test" class="tabcontent modern-ui content">
+        <div class="test-card">
+            <div class="content-title"><h1>Test</h1></div>
+            <p style="font-size: 13.5px; color: var(--ink-3); margin: 0;">Teszt- és demóadat-generátorok fejlesztői/oktatói célra.</p>
+            <div class="button-row">
+                <button id="fakeuser" class="btn-ghost" onclick="fakeuser()">Fakes users</button>
+                <button id="fakerfq" class="btn-ghost" onclick="fakerfq()">Fakes RFQ</button>
+            </div>
+        </div>
     </div>
     <div id="message" class="message"></div>
 </div>

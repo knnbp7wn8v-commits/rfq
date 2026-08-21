@@ -35,13 +35,21 @@ function portfolio_render(data) {
 }
 
 function users_render(data) {
+   // Megjegyzés: a ciklus törzsében korábban két egymást követő
+   // "table.insertRow()" hívás állt - az első eredménye (egy teljesen
+   // üres, cellák nélküli <tr>) sosem lett felhasználva, csak a
+   // MÁSODIK ("newRow") kapta meg a tényleges adatokat. Ez minden
+   // egyes ügyfélhez egy láthatatlan, de érvényes (üres) sort is
+   // beszúrt a táblázatba - a hiba vizuálisan alig tűnt fel, mert az
+   // üres <tr>-nek nem volt tartalma/magassága, de feleslegesen
+   // duplázta a DOM-sorok számát szűrés/frissítés után. Javítva:
+   // csak a ténylegesen feltöltött sor jön létre.
    const table = document.getElementById("customers");
    const rows = table.rows;
    for (let i = rows.length - 1; i > 0; i--) {
       table.deleteRow(i);
    }
    for (let row of data) {
-      table.insertRow();
       const newRow = table.insertRow();
       newRow.id = `row-${row.customer_id}`;
       newRow.onclick = function() {
@@ -72,6 +80,12 @@ function plie_param_render(data) {
    }
    let table = document.createElement('table');
    table.setAttribute("id", "plie_params");
+   // A "data-table" osztályt korábban csak a szerveroldalról (EJS)
+   // renderelt kezdeti táblázat kapta meg (lásd admin.ejs) - az
+   // itt, JS-ből ÚJRAlétrehozott <table> elem osztály nélkül jött
+   // létre, ezért egy Add/Delete művelet után a táblázat elvesztette
+   // a modern felület stílusát. Javítva.
+   table.className = "data-table";
    table.insertRow();
    var headerCell = document.createElement("TH");
    headerCell.innerHTML = "Select All";
@@ -111,6 +125,8 @@ function ediam_param_render(data) {
    }
    let table = document.createElement('table');
    table.setAttribute("id", "ediam_params");
+   // Lásd a plie_param_render()-ben lévő azonos megjegyzést.
+   table.className = "data-table";
    table.insertRow();
    var headerCell = document.createElement("TH");
    headerCell.innerHTML = "Select All";
@@ -200,54 +216,57 @@ function details(id) {
          document.getElementById("c_details").innerHTML = "";
          let table = document.createElement('table');
          table.setAttribute("id", "c_details" + data.data[0].customer_id);
-         table.insertRow();
+         // Megjegyzés: az itteni "table.insertRow()" a lenti ciklus ELŐTT
+         // állt, felesleges üres sort szúrva a részletek-táblázat elejére
+         // - lásd a users_render()-ben talált, azonos jellegű hibát erről
+         // bővebben. Törölve.
          for (let row of data.data) {
             table.insertRow();
             let newCell = table.rows[table.rows.length - 1].insertCell();
             newCell.textContent = "Customer Name";
-            newCell.classList = "col1"
+            newCell.className = "col1"
             newCell = table.rows[table.rows.length - 1].insertCell();
             newCell.textContent = row.customer_name;
-            newCell.classList = "col2"
+            newCell.className = "col2"
             table.insertRow();
             newCell = table.rows[table.rows.length - 1].insertCell();
             newCell.textContent = "Vat Number";
-            newCell.classList = "col1"
+            newCell.className = "col1"
             newCell = table.rows[table.rows.length - 1].insertCell();
             newCell.textContent = row.vat_number;
-            newCell.classList = "col2"
+            newCell.className = "col2"
             table.insertRow();
             newCell = table.rows[table.rows.length - 1].insertCell();
             newCell.textContent = "Contact Name";
-            newCell.classList = "col1"
+            newCell.className = "col1"
             newCell = table.rows[table.rows.length - 1].insertCell();
             newCell.textContent = row.contact_name;
-            newCell.classList = "col2"
+            newCell.className = "col2"
             table.insertRow();
             newCell = table.rows[table.rows.length - 1].insertCell();
             newCell.textContent = "Email";
-            newCell.classList = "col1"
+            newCell.className = "col1"
             newCell = table.rows[table.rows.length - 1].insertCell();
             newCell.textContent = row.email;
-            newCell.classList = "col2"
+            newCell.className = "col2"
             table.insertRow();
             newCell = table.rows[table.rows.length - 1].insertCell();
             newCell.textContent = "Phone";
-            newCell.classList = "col1"
+            newCell.className = "col1"
             newCell = table.rows[table.rows.length - 1].insertCell();
             newCell.textContent = row.phone;
-            newCell.classList = "col2"
+            newCell.className = "col2"
             table.insertRow();
             newCell = table.rows[table.rows.length - 1].insertCell();
             newCell.textContent = "Date Joined";
-            newCell.classList = "col1"
+            newCell.className = "col1"
             newCell = table.rows[table.rows.length - 1].insertCell();
             newCell.textContent = row.date_joined;
-            newCell.classList = "col2"
+            newCell.className = "col2"
             table.insertRow();
             newCell = table.rows[table.rows.length - 1].insertCell();
             newCell.textContent = "Role";
-            newCell.classList = "col1"
+            newCell.className = "col1"
             newCell = table.rows[table.rows.length - 1].insertCell();
             var roles = document.createElement("select");
             roles.setAttribute("id", "role_id");
@@ -265,11 +284,11 @@ function details(id) {
             roles.appendChild(option);
             newCell.appendChild(roles);
             //newCell.textContent = row.role_id;
-            newCell.classList = "col2"
+            newCell.className = "col2"
             table.insertRow();
             newCell = table.rows[table.rows.length - 1].insertCell();
             newCell.textContent = "Status";
-            newCell.classList = "col1"
+            newCell.className = "col1"
             newCell = table.rows[table.rows.length - 1].insertCell();
             var status = document.createElement("select");
             status.setAttribute("id", "status");
@@ -283,12 +302,12 @@ function details(id) {
             status.appendChild(option);
             newCell.appendChild(status);
             //newCell.textContent = row.status;
-            newCell.classList = "col2"
+            newCell.className = "col2"
 
             table.insertRow();
             newCell = table.rows[table.rows.length - 1].insertCell();
             newCell.textContent = "Új jelszó";
-            newCell.classList = "col1"
+            newCell.className = "col1"
             newCell = table.rows[table.rows.length - 1].insertCell();
             var pass = document.createElement("input");
             pass.setAttribute("type", "password");
@@ -297,12 +316,12 @@ function details(id) {
             div.setAttribute("id", "passwordFeedback");
             newCell.appendChild(pass);
             newCell.appendChild(div);
-            newCell.classList = "col2"
+            newCell.className = "col2"
 
             table.insertRow();
             newCell = table.rows[table.rows.length - 1].insertCell();
             newCell.textContent = "Jelszó ismétlése";
-            newCell.classList = "col1"
+            newCell.className = "col1"
             newCell = table.rows[table.rows.length - 1].insertCell();
             var repass = document.createElement("input");
             repass.setAttribute("type", "password");
@@ -311,7 +330,7 @@ function details(id) {
             div.setAttribute("id", "confirmPasswordFeedback");
             newCell.appendChild(repass);
             newCell.appendChild(div);
-            newCell.classList = "col2"
+            newCell.className = "col2"
 
          }
          document.getElementById("c_details").append(table);

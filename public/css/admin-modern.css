@@ -233,3 +233,268 @@
   font-weight: 500;
   margin: 0 !important;
 }
+
+/* ============================================================
+   Parameters / Others / Customers / Requests / Test fülek
+   ============================================================
+   A Portfolio fültől eltérően ezekhez a fülekhez nem tartozik
+   jóváhagyott látványterv-artboard (lásd kod_atvilagitas_kliens.md) -
+   a lenti szabályok a már bevezetett tervezési nyelvet (design
+   tokenek, ".table-card"/".data-table", ".btn-primary"/".btn-ghost",
+   ".labelclass") következetesen alkalmazzák ezekre a fülekre is.
+   A tabcontent-divek a ".content" osztályt is megkapják (lásd
+   admin.ejs), így a közös 28px-es térköz/flex-oszlop elrendezést
+   (modern-shared.css) örökli mindegyik - itt csak a fülön belüli,
+   egyedi elrendezést és komponenseket definiáljuk. */
+
+/* ---- mező-/címke-alapok (Parameters/Others fülek) ----
+   A ".field"/".labelclass" mintát a többi modernizált oldal (pl.
+   rfq-modern.css, profile-modern.css) saját maga is definiálja - a
+   kialakult konvenció szerint ez a duplikáció szándékos: minden
+   oldal-specifikus CSS-modul önmagában is értelmezhető marad,
+   nincs rejtett függés egy másik oldal stíluslapjától. */
+.modern-ui .field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.modern-ui .labelclass {
+  display: block;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 2px;
+}
+.modern-ui label {
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  font-weight: 400;
+  font-size: 13.5px;
+  color: var(--ink);
+}
+
+/* ---- listboxos (size-attribútumos) select - listás megjelenés ----
+   A Parameters/Others füleken a natív <select size="..."> elemek
+   (nem legördülők) maradtak meg funkcionálisan változatlanul - ez a
+   szabály csak a keretüket/tipográfiájukat igazítja a design
+   rendszerhez, a böngésző natív listbox-viselkedését nem írja felül. */
+.modern-ui select[size] {
+  width: 100%;
+  border: 1px solid var(--border-2);
+  border-radius: 8px;
+  padding: 6px;
+  background: var(--surface);
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  font-size: 13px;
+  color: var(--ink);
+}
+.modern-ui select[size]:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.modern-ui select[size] option {
+  padding: 5px 8px;
+  border-radius: 5px;
+}
+
+/* ---- Parameters fül ---- */
+
+.modern-ui.tabcontent#Parameters {
+  gap: 22px;
+}
+.modern-ui .params-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  align-items: start;
+}
+.modern-ui .param-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.modern-ui .param-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.modern-ui .param-form .field {
+  max-width: none;
+}
+.modern-ui .param-table-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ---- Others fül ---- */
+
+.modern-ui.tabcontent#Others {
+  gap: 22px;
+}
+.modern-ui .ref-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+.modern-ui .ref-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.modern-ui .ref-list-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.modern-ui .ref-list-block .button-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 0;
+}
+.modern-ui .oadd,
+.modern-ui .odel {
+  font-size: 12.5px;
+  padding: 7px 13px;
+}
+.modern-ui .oadd {
+  background: var(--accent);
+  color: #fff;
+}
+.modern-ui .oadd:hover {
+  background: var(--accent-hover);
+}
+.modern-ui .odel {
+  background: var(--card);
+  color: var(--ink-2);
+  border: 1px solid var(--border-2);
+}
+.modern-ui .odel:hover {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+/* ---- Customers fül ---- */
+
+.modern-ui.tabcontent#Customers {
+  gap: 22px;
+}
+.modern-ui table#customers tbody tr {
+  cursor: pointer;
+}
+.modern-ui .detail-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 22px;
+}
+.modern-ui .detail-card:empty {
+  display: none;
+}
+.modern-ui .detail-card table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.modern-ui .detail-card table td {
+  padding: 9px 4px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13.5px;
+  vertical-align: middle;
+}
+.modern-ui .detail-card table tr:last-child td {
+  border-bottom: none;
+}
+.modern-ui .detail-card table td.col1 {
+  width: 34%;
+  color: var(--ink-3);
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.modern-ui .detail-card table td.col2 select,
+.modern-ui .detail-card table td.col2 input {
+  width: 100%;
+  max-width: 280px;
+  border: 1px solid var(--border-2);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  font-size: 13.5px;
+  color: var(--ink);
+  background: var(--surface);
+  height: auto;
+}
+.modern-ui .detail-card #update {
+  margin-top: 14px;
+}
+.modern-ui .detail-card #passwordFeedback,
+.modern-ui .detail-card #confirmPasswordFeedback {
+  font-size: 12px;
+  margin-top: 4px;
+}
+.modern-ui .detail-card .valid {
+  color: var(--success, #1a7f4e);
+}
+.modern-ui .detail-card .invalid {
+  color: #c0392b;
+}
+
+/* ---- Requests fül ----
+   MEGJEGYZÉS a fejléc-eltolódási hibáról (lásd kod_atvilagitas_kliens.md):
+   a korábbi megjelenésben a táblázat egy szélesség nélküli, csak
+   "overflow-x: scroll"-t kapott <div>-ben állt, a fejléc-cellák pedig
+   (Customer/Tissue/Plies/.../Date - 15 oszlop) semmilyen komponens-
+   osztályt nem viseltek, ezért egyenletes szélesség-kiosztás helyett a
+   böngésző a keresőmezők natív méretéhez igazodva, a törzs-celláktól
+   eltérő módon törte sorba az egyes fejléc-tartalmakat - a fejléc és a
+   táblázat törzse így vizuálisan szétcsúszott. A ".table-card" (rögzített
+   szélességű, saját "overflow-x: auto" görgetésű kártya-keret) és a
+   Portfolio fülnél már bevált ".data-table"/".th-search" komponens
+   újrafelhasználásával a fejléc és a törzs ugyanazt az oszlop-elrendezést
+   kapja, mert mindkettő egyetlen <table> valódi <tr>-jei - a hiba
+   strukturálisan szűnik meg, nem csak vizuálisan van elfedve. */
+
+.modern-ui.tabcontent#Requests {
+  gap: 22px;
+}
+.modern-ui table#request th,
+.modern-ui table#request td {
+  white-space: nowrap;
+}
+.modern-ui table#request .th-search {
+  min-width: 90px;
+}
+
+/* ---- Test fül ---- */
+
+.modern-ui.tabcontent#Test {
+  gap: 16px;
+}
+.modern-ui .test-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 420px;
+}
+.modern-ui .test-card .button-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 0;
+}
