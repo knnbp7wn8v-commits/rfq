@@ -228,6 +228,21 @@
   overflow-y: hidden;
   display: flex;
   flex-direction: column;
+  /* MEGJEGYZÉS a "min-width: 0"-ról: a ".table-card" tipikusan egy
+     flex-konténer (pl. ".content", "display:flex; flex-direction:column")
+     gyermekeként jelenik meg. A flex-elemek alapértelmezett "min-width"-e
+     "auto", ami a TARTALOM belső (intrinsic) minimális szélességét
+     jelenti - egy sok/széles oszlopos táblázat (pl. az Admin > Requests
+     fül 15 oszlopa) esetén ez a belső minimum meghaladhatja a
+     rendelkezésre álló helyet, és a flex-elem (a saját "overflow-x: auto"
+     szabálya ELLENÉRE) nem zsugorodik össze, hanem szétfeszíti a szülőt -
+     ilyenkor a táblázat fejléce és törzse nem a kártyán BELÜL görgethető,
+     hanem az egész oldal görgethető vízszintesen, ami vizuálisan
+     "szétcsúszott" fejlécként hat. A "min-width: 0" felülírja ezt az
+     alapértelmezést, így a kártya ténylegesen a rendelkezésre álló
+     szélességre zsugorodik, és a belső "overflow-x: auto" veszi át a
+     görgetést. */
+  min-width: 0;
 }
 .modern-ui .data-table {
   width: 100%;

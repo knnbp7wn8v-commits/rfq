@@ -825,4 +825,18 @@ min-height: 100vh;
 
 .wrapper {
 padding: 20px;
+/* MEGJEGYZÉS a "min-width: 0"-ról: a "body { display: grid; }" (lásd
+   feljebb) miatt ez a ".wrapper" a "body" rács egyetlen implicit
+   cellájának tartalma - a rács-elemek (a flex-elemekhez hasonlóan)
+   alapértelmezett "min-width"-e "auto", ami a TARTALOM belső
+   (intrinsic) minimális szélességét jelenti. Egy széles, sok oszlopos
+   táblázatot (pl. az Admin > Requests fül) tartalmazó oldalon ez a
+   belső minimum meghaladhatja a nézőablak szélességét, és a ".wrapper"
+   (a benne lévő elemek saját "overflow-x: auto" görgetése ELLENÉRE)
+   nem zsugorodik a nézőablak szélességére, hanem szétfeszíti azt - a
+   táblázat emiatt nem a saját kártyáján BELÜL görgethető, hanem az
+   egész oldal görgethető vízszintesen, ami a fejléc/törzs
+   "szétcsúszásaként" hat. A "min-width: 0" felülírja ezt az
+   alapértelmezést. */
+min-width: 0;
 }

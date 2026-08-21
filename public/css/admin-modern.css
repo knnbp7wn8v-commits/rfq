@@ -247,6 +247,28 @@
    (modern-shared.css) örökli mindegyik - itt csak a fülön belüli,
    egyedi elrendezést és komponenseket definiáljuk. */
 
+/* ---- fül-váltás alapállapota (Parameters/Others/Customers/Requests/Test) ----
+   MEGJEGYZÉS: a "openTab()" (common.js) a fülváltáskor minden
+   ".tabcontent" elemet elrejt ("display:none"), majd a kattintott fülre
+   inline "style.display='flex'"-et állít be - ez a viselkedés a
+   style.css ".tabcontent{display:none}" alapállapotára épül. A
+   modern-shared.css ".modern-ui.content{display:flex; ...}" szabálya
+   viszont (két osztály-szintű specificitásával) MAGASABB specificitású,
+   mint az egyetlen osztályú ".tabcontent{display:none}", ezért miután
+   ezek a fülek megkapták a ".content" osztályt, a böngésző az
+   openTab() JS-hívásától FÜGGETLENÜL, kezdettől fogva mindegyiket
+   láthatóvá tette - a Portfolio mellett az összes többi fül tartalma is
+   megjelent, egymás alatt. Az alábbi, három osztályú (tehát magasabb
+   specificitású) szabály állítja vissza az alapértelmezett rejtett
+   állapotot ezeken a fülökön; a felhasználói kattintásra az openTab()
+   által beállított INLINE "display:flex" (mindig felülírja az
+   osztály-alapú szabályokat) továbbra is helyesen jeleníti meg az adott
+   fület, a ".content" egyéb (padding/gap/flex-direction) szabályai
+   pedig változatlanul érvényesülnek, mert azokat itt nem írjuk felül. */
+.modern-ui.tabcontent.content {
+  display: none;
+}
+
 /* ---- mező-/címke-alapok (Parameters/Others fülek) ----
    A ".field"/".labelclass" mintát a többi modernizált oldal (pl.
    rfq-modern.css, profile-modern.css) saját maga is definiálja - a
