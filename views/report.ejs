@@ -4,6 +4,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="css/style.css" />
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+    <link rel="stylesheet" type="text/css" href="css/modern-shared.css" />
+    <link rel="stylesheet" type="text/css" href="css/report-modern.css" />
     <title>Request for Order</title>
     <script src="assets/scripts/common.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/emailjs-com@2.4.0/dist/email.min.js"></script>
@@ -18,69 +21,125 @@
 
 <body>
     <div class="wrapper">
-    <div class="menu">
-        <span><a href="protected">Home</a></span>
-        <span><a href="">Profile</a></span>
-            <span><a href="report">Report</a></span>
-            <span><a href="admin">Admin</a></span>
+    <div class="menu modern-ui">
+        <div class="topnav">
+            <div class="topnav-left">
+                <div class="brand">
+                    <svg class="brand-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="9"></circle>
+                        <circle cx="12" cy="12" r="4"></circle>
+                    </svg>
+                    <span class="brand-name">RFQ</span>
+                </div>
+                <nav class="nav-links">
+                    <a class="nav-link" href="protected">Home</a>
+                    <a class="nav-link" href="profile">Profile</a>
+                    <a class="nav-link active" href="report">Report</a>
+                    <a class="nav-link" href="admin">Admin</a>
+                </nav>
+            </div>
+            <div class="topnav-right">
+                <div class="user-chip">
+                    <span class="avatar"><%= (user.customer_name || '?').trim().charAt(0).toUpperCase() %></span>
+                    <span class="user-name" id="name">Welcome back: <strong><%= user.customer_name %></strong></span>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="filter-bar">
-        <select id="year" onchange="change(this.id)">
-            <option value="">Select</option>
-            <option value="2023">2023</option>
-            <option value="2024">2024</option>
-            <option value="2025">2025</option>
-        </select>
-        <select id="month" disabled onchange="change(this.id)">
-            <option value="">Select</option>
-            <option value="1">January</option>
-            <option value="2">February</option>
-            <option value="3">March</option>
-            <option value="4">April</option>
-            <option value="5">May</option>
-            <option value="6">June</option>
-            <option value="7">July</option>
-            <option value="8">August</option>
-            <option value="9">September</option>
-            <option value="10">October</option>
-            <option value="11">November</option>
-            <option value="12">December</option>
-        </select>
-        <select id="time" onchange="change(this.id)">
-            <option value="">select</option>
-            <option value="7 days">Last 7 days</option>
-            <option value="30 days">Last 30 days</option>
-            <option value="3 month">Last 3 month</option>
-            <option value="6 month">Last 6 month</option>
-            <option value="1 year">Last 1 years</option>
-        </select>
-        <select id="company" onchange="change(this.id)">
-            <option value="">Select</option>
-            <% data.rows.forEach(function(pr) { %>
-            <option value="<%= pr.customer_id %>"><%= pr.customer_name %></option>
-            <% }); %>
-        </select>
-        <select>
-            <option>Boston, MA</option>
-        </select>
-        <button>More</button>
-        <button>Update</button>
+    <div class="content modern-ui">
+    <div class="page-head">
+        <h1>Report</h1>
+        <p>Riporttípus és szűrők kiválasztása a megjelenítéshez</p>
     </div>
-    
+    <div class="toolbar">
+        <div class="field">
+            <label for="year">Év</label>
+            <select id="year" onchange="change(this.id)">
+                <option value="">Select</option>
+                <option value="2023">2023</option>
+                <option value="2024">2024</option>
+                <option value="2025">2025</option>
+            </select>
+        </div>
+        <div class="field">
+            <label for="month">Hónap</label>
+            <select id="month" disabled onchange="change(this.id)">
+                <option value="">Select</option>
+                <option value="1">January</option>
+                <option value="2">February</option>
+                <option value="3">March</option>
+                <option value="4">April</option>
+                <option value="5">May</option>
+                <option value="6">June</option>
+                <option value="7">July</option>
+                <option value="8">August</option>
+                <option value="9">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+            </select>
+        </div>
+        <div class="field">
+            <label for="time">Időszak</label>
+            <select id="time" onchange="change(this.id)">
+                <option value="">select</option>
+                <option value="7 days">Last 7 days</option>
+                <option value="30 days">Last 30 days</option>
+                <option value="3 month">Last 3 month</option>
+                <option value="6 month">Last 6 month</option>
+                <option value="1 year">Last 1 years</option>
+            </select>
+        </div>
+        <div class="field">
+            <label for="company">Ügyfél</label>
+            <select id="company" onchange="change(this.id)">
+                <option value="">Select</option>
+                <% data.rows.forEach(function(pr) { %>
+                <option value="<%= pr.customer_id %>"><%= pr.customer_name %></option>
+                <% }); %>
+            </select>
+        </div>
+        <div class="field">
+            <label>Helyszín</label>
+            <select>
+                <option>Boston, MA</option>
+            </select>
+        </div>
+        <div class="toolbar-actions">
+            <button class="btn-ghost" type="button">More</button>
+            <button class="btn-primary" type="button">Update</button>
+        </div>
+    </div>
+
     <div class="tabs">
-        <a href="#" onclick="report1(this);" data-value="chart1">Termékigény Riport</a>
-        <a href="#" onclick="report2(this);" data-value="chart2">Rétegek és Papírsúly Riport</a>
-        <a href="#" onclick="report3(this);" data-value="chart3">Szállítási Igény Riport</a>
-        <a href="#" onclick="report4(this);" data-value="chart4">FSC Tanúsítvány Riport</a>
-        <a href="#" onclick="report5(this);" data-value="chart5">Trendek és Elemzések Riport</a>
-
+        <a href="#" class="report-type" onclick="report1(this);" data-value="chart1">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+            <span>Termékigény Riport</span>
+        </a>
+        <a href="#" class="report-type" onclick="report2(this);" data-value="chart2">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="4" rx="1"></rect><rect x="3" y="10" width="18" height="4" rx="1"></rect><rect x="3" y="16" width="18" height="4" rx="1"></rect></svg>
+            <span>Rétegek és Papírsúly Riport</span>
+        </a>
+        <a href="#" class="report-type" onclick="report3(this);" data-value="chart3">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="7" width="15" height="10" rx="1"></rect><path d="M16 10h3.5l3.5 3.5V17h-7"></path><circle cx="6" cy="19" r="2"></circle><circle cx="18.5" cy="19" r="2"></circle></svg>
+            <span>Szállítási Igény Riport</span>
+        </a>
+        <a href="#" class="report-type" onclick="report4(this);" data-value="chart4">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3.5v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9v-5L12 3z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+            <span>FSC Tanúsítvány Riport</span>
+        </a>
+        <a href="#" class="report-type" onclick="report5(this);" data-value="chart5">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 6"></polyline><polyline points="15 6 21 6 21 12"></polyline></svg>
+            <span>Trendek és Elemzések Riport</span>
+        </a>
     </div>
-    <div id="tooltip" style="position: absolute; visibility: hidden; background: #f9f9f9; border: 1px solid #ccc; padding: 5px; border-radius: 4px;"></div>
-    <div id="chart">
 
+    <div class="chart-card">
+        <h1 id="charttext"></h1>
+        <div id="tooltip" style="position: absolute; visibility: hidden; padding: 6px 9px;"></div>
+        <svg width="1024" height="800" id="svgchart"></svg>
     </div>
-    <h1 style="margin-left: 50px" id="charttext"></h1>
-    <svg width="1024" height="800" style="margin-left: 50px" id="svgchart"></svg>
+    </div>
     <script>
         async function fetchData(cr) {
             const chart = cr;
@@ -116,7 +175,14 @@
                 showMessage('Failed to load the report data. Please try again.', 'error');
                 return;
             }
-            const svg = d3.select("svg");
+            // A "svg" elem-szintű szelektor korábban véletlenül helyesen
+            // működött, mert az oldalon az egyetlen <svg> a diagram maga
+            // volt. A modernizált fejléc/ikonok miatt mostantól több <svg>
+            // is szerepel a lapon (márkajelzés, riporttípus-ikonok) - ezért
+            // itt kifejezetten a diagram-konténerre (#svgchart) kell
+            // hivatkozni, különben a d3 a legelső, nem a diagramhoz tartozó
+            // <svg>-t választaná ki.
+            const svg = d3.select("#svgchart");
             const margin = { top: 20, right: 30, bottom: 40, left: 40 };
             const width = +svg.attr("width") - margin.left - margin.right;
             const height = +svg.attr("height") - margin.top - margin.bottom;
@@ -272,9 +338,18 @@
         }
 
         // Oszlopdiagram a heti igényekhez
+        //
+        // Javítás: a függvény korábban a nyers API-válasz kis kezdőbetűs
+        // mezőneveit (producttype/totalquantity) olvasta ki, holott a
+        // createChart() a chart3 ághoz már átalakított, nagy Q/T betűs
+        // parsedData objektumot ad át neki (lásd fentebb, productType/
+        // totalQuantity). Emiatt a sávok x-tengelyen egyetlen (undefined)
+        // pozícióra estek és a magasságuk NaN volt - a valós böngészős
+        // teszt során az SVG a konzolba <rect> height="NaN" hibát írt, a
+        // riport pedig gyakorlatilag üres diagramot mutatott.
         function createWeeklyBarChart(data, svg, margin, width, height) {
             const x = d3.scaleBand()
-                .domain(data.map(d => d.producttype))
+                .domain(data.map(d => d.productType))
                 .range([0, width])
                 .padding(0.1);
 
@@ -302,14 +377,14 @@
                 .data(data)
                 .enter().append("rect")
                 .attr("class", "bar")
-                .attr("x", d => x(d.producttype))
-                .attr("y", d => y(d.totalquantity))
+                .attr("x", d => x(d.productType))
+                .attr("y", d => y(d.totalQuantity))
                 .attr("width", x.bandwidth())
-                .attr("height", d => height - y(d.totalquantity))
+                .attr("height", d => height - y(d.totalQuantity))
                 .attr("fill", d => d3.schemeCategory10[data.indexOf(d) % 10])
                 .on("mouseover", function(event, d) {
                     tooltip.style("visibility", "visible")
-                        .text(`Total Quantity: ${d.totalquantity}`);
+                        .text(`Total Quantity: ${d.totalQuantity}`);
                 })
                 .on("mousemove", function(event) {
                     tooltip.style("top", (event.pageY - 10) + "px")

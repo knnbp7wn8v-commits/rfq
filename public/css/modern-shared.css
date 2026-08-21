@@ -1,0 +1,230 @@
+/* ============================================================
+   Modern UI - megosztott alapréteg (design tokenek, felső
+   navigáció, gomb- és link-alapstílusok)
+   ============================================================
+   Ezt a fájlt minden fokozatosan modernizált oldal betölti
+   (jelenleg: admin.ejs, report.ejs). A benne lévő minden
+   szabály - az admin-modern.css-ben már bevezetett indoklás
+   szerint - a ".modern-ui" osztály-előtaggal van ellátva, hogy
+   megbízhatóan felülírja a style.css globális, elem-szintű
+   szabályait (pl. "button", "a:link", "svg"), a betöltési
+   sorrendtől és a még nem modernizált oldalaktól/fülektől
+   függetlenül.
+   Oldal-specifikus szabályok (pl. admin-modern.css, majd a
+   további oldalak modern-*.css fájljai) ezt a fájlt egészítik
+   ki, nem duplikálják.
+   ============================================================ */
+
+.modern-ui {
+  --accent: oklch(46% 0.12 246);
+  --accent-hover: oklch(40% 0.13 246);
+  --accent-tint: oklch(95% 0.018 246);
+  --accent-tint-strong: oklch(89% 0.045 246);
+  --ink: oklch(21% 0.02 250);
+  --ink-2: oklch(45% 0.018 250);
+  --ink-3: oklch(62% 0.014 250);
+  --surface: oklch(97.5% 0.003 250);
+  --card: oklch(100% 0 0);
+  --border: oklch(90% 0.008 250);
+  --border-2: oklch(84% 0.01 250);
+}
+
+.modern-ui, .modern-ui * {
+  box-sizing: border-box;
+}
+
+.modern-ui {
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  color: var(--ink);
+}
+
+.modern-ui svg { color: inherit; }
+
+/* ---- gomb és link alapok ---- */
+
+.modern-ui button {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 13.5px;
+  border-radius: 8px;
+  padding: 9px 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.modern-ui .btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+.modern-ui .btn-primary:hover {
+  background: var(--accent-hover);
+  color: #fff;
+}
+
+.modern-ui .btn-ghost {
+  background: var(--card);
+  color: var(--ink-2);
+  border-color: var(--border-2);
+}
+.modern-ui .btn-ghost:hover {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.modern-ui button svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+}
+
+.modern-ui a.nav-link {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+  font-size: 14.5px;
+  color: var(--ink-2);
+  padding: 8px 14px;
+  border-radius: 8px;
+  text-decoration: none;
+}
+.modern-ui a.nav-link:hover {
+  color: var(--ink);
+  background: var(--surface);
+}
+.modern-ui a.nav-link.active {
+  color: var(--accent);
+  background: var(--accent-tint);
+}
+
+/* ---- felső navigáció ---- */
+
+.modern-ui .topnav {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  max-height: none;
+}
+.modern-ui .topnav-left {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+.modern-ui .brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.modern-ui .brand-mark {
+  width: 26px;
+  height: 26px;
+  color: var(--accent);
+  flex: 0 0 auto;
+}
+.modern-ui .brand-name {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--ink);
+}
+.modern-ui .nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.modern-ui .topnav-right {
+  display: flex;
+  align-items: center;
+}
+.modern-ui .user-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.modern-ui .avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  flex: 0 0 auto;
+}
+.modern-ui .user-name {
+  font-size: 13.5px;
+  color: var(--ink-2);
+  font-weight: 500;
+}
+.modern-ui .user-name strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* ---- általános oldal-váz (tartalmi terület) ---- */
+
+.modern-ui .content {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  background: var(--surface);
+}
+.modern-ui .page-head h1 {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  color: var(--ink);
+  margin: 0;
+}
+.modern-ui .page-head p {
+  font-size: 14px;
+  color: var(--ink-3);
+  margin: 4px 0 0;
+}
+
+/* ---- egyedi jelölőnégyzet / rádiógomb kinézet ---- */
+
+.modern-ui input[type="checkbox"],
+.modern-ui input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1.5px solid var(--border-2);
+  background: var(--card);
+  position: relative;
+  cursor: pointer;
+  flex: 0 0 auto;
+  margin: 0;
+  vertical-align: middle;
+}
+.modern-ui input[type="checkbox"]:checked,
+.modern-ui input[type="radio"]:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.modern-ui input[type="checkbox"]:checked::after,
+.modern-ui input[type="radio"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 5px;
+  height: 9px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}

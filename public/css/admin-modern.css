@@ -1,6 +1,12 @@
 /* ============================================================
-   Admin felület - modern UI (Portfolio fül + közös fejléc)
+   Admin felület - modern UI (Portfolio fül)
    ============================================================
+   A közös alapréteg (design tokenek, felső navigáció, gomb- és
+   link-alapstílusok) a modern-shared.css-ben található, amelyet
+   az admin.ejs ennél a fájlnál korábban tölt be - ez a fájl azt
+   egészíti ki az Admin oldalra jellemző elemekkel (fül-sáv,
+   Portfolio szűrőpanel és adattábla).
+
    Ezt a fájlt kizárólag a views/admin.ejs tölti be, tehát a
    szabályai nem hathatnak más oldalra. Az admin.ejs-en BELÜL
    viszont a Parameters/Others/Customers/Requests/Test fülek
@@ -19,164 +25,6 @@
    érintett globális szabályt anélkül, hogy a még nem
    modernizált fülekhez hozzá kellene nyúlni.
    ============================================================ */
-
-.modern-ui {
-  --accent: oklch(46% 0.12 246);
-  --accent-hover: oklch(40% 0.13 246);
-  --accent-tint: oklch(95% 0.018 246);
-  --accent-tint-strong: oklch(89% 0.045 246);
-  --ink: oklch(21% 0.02 250);
-  --ink-2: oklch(45% 0.018 250);
-  --ink-3: oklch(62% 0.014 250);
-  --surface: oklch(97.5% 0.003 250);
-  --card: oklch(100% 0 0);
-  --border: oklch(90% 0.008 250);
-  --border-2: oklch(84% 0.01 250);
-}
-
-.modern-ui, .modern-ui * {
-  box-sizing: border-box;
-}
-
-.modern-ui {
-  font-family: 'IBM Plex Sans', system-ui, sans-serif;
-  color: var(--ink);
-}
-
-/* ---- gomb és link alapok (felülírja a style.css "button"/"a:link" stb.
-       globális szabályait a fenti specificitási megfontolás szerint) ---- */
-
-.modern-ui button {
-  font-family: 'Poppins', sans-serif;
-  font-weight: 600;
-  font-size: 13.5px;
-  border-radius: 8px;
-  padding: 9px 16px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  border: 1px solid transparent;
-  cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-}
-
-.modern-ui .btn-primary {
-  background: var(--accent);
-  color: #fff;
-}
-.modern-ui .btn-primary:hover {
-  background: var(--accent-hover);
-  color: #fff;
-}
-
-.modern-ui .btn-ghost {
-  background: var(--card);
-  color: var(--ink-2);
-  border-color: var(--border-2);
-}
-.modern-ui .btn-ghost:hover {
-  background: var(--surface);
-  color: var(--ink);
-}
-
-.modern-ui button svg {
-  width: 15px;
-  height: 15px;
-  flex: 0 0 auto;
-}
-
-.modern-ui a.nav-link {
-  font-family: 'Poppins', sans-serif;
-  font-weight: 500;
-  font-size: 14.5px;
-  color: var(--ink-2);
-  padding: 8px 14px;
-  border-radius: 8px;
-  text-decoration: none;
-}
-.modern-ui a.nav-link:hover {
-  color: var(--ink);
-  background: var(--surface);
-}
-.modern-ui a.nav-link.active {
-  color: var(--accent);
-  background: var(--accent-tint);
-}
-
-.modern-ui svg { color: inherit; }
-
-/* ---- felső navigáció ---- */
-
-.modern-ui .topnav {
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 28px;
-  background: var(--card);
-  border-bottom: 1px solid var(--border);
-  max-height: none;
-}
-.modern-ui .topnav-left {
-  display: flex;
-  align-items: center;
-  gap: 40px;
-}
-.modern-ui .brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.modern-ui .brand-mark {
-  width: 26px;
-  height: 26px;
-  color: var(--accent);
-  flex: 0 0 auto;
-}
-.modern-ui .brand-name {
-  font-family: 'Poppins', sans-serif;
-  font-weight: 700;
-  font-size: 17px;
-  color: var(--ink);
-}
-.modern-ui .nav-links {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-.modern-ui .topnav-right {
-  display: flex;
-  align-items: center;
-}
-.modern-ui .user-chip {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.modern-ui .avatar {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: var(--accent);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Poppins', sans-serif;
-  font-weight: 600;
-  font-size: 12px;
-  flex: 0 0 auto;
-}
-.modern-ui .user-name {
-  font-size: 13.5px;
-  color: var(--ink-2);
-  font-weight: 500;
-}
-.modern-ui .user-name strong {
-  color: var(--ink);
-  font-weight: 600;
-}
 
 /* ---- fül-sáv (subnav) ---- */
 
@@ -294,40 +142,7 @@
   display: none;
 }
 
-/* ---- egyedi jelölőnégyzet / rádiógomb kinézet ---- */
-
-.modern-ui input[type="checkbox"],
-.modern-ui input[type="radio"] {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 16px;
-  height: 16px;
-  border-radius: 4px;
-  border: 1.5px solid var(--border-2);
-  background: var(--card);
-  position: relative;
-  cursor: pointer;
-  flex: 0 0 auto;
-  margin: 0;
-  vertical-align: middle;
-}
-.modern-ui input[type="checkbox"]:checked,
-.modern-ui input[type="radio"]:checked {
-  background: var(--accent);
-  border-color: var(--accent);
-}
-.modern-ui input[type="checkbox"]:checked::after,
-.modern-ui input[type="radio"]:checked::after {
-  content: "";
-  position: absolute;
-  left: 4px;
-  top: 1px;
-  width: 5px;
-  height: 9px;
-  border: solid #fff;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
-}
+/* A jelölőnégyzet/rádiógomb egyedi kinézete a modern-shared.css-ben. */
 
 /* ---- tartalom fejléc ---- */
 

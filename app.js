@@ -803,7 +803,7 @@ app.get('/report', (req, res) => {
         logger.error('SQL ERROR:', err);
         res.redirect('/login');
       } else {
-        res.render('report.ejs', { data: result });
+        res.render('report.ejs', { data: result, user: req.user });
       }
     });
   } else {
@@ -989,9 +989,6 @@ async function insertCustomers(num) {
     }
   }
 }
-// Lehetséges customer_id értékek
-const customerIds = [2, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
-
 // Tissue, plies és grammatura beállítások
 const tissues = ['toilet', 'kitchen towel', 'hanky', 'facial', 'napkin'];
 const pliesOptions = {
@@ -1041,7 +1038,14 @@ async function insertRFQ(data) {
   await pool.query(insertQuery, values);
 }
 // Véletlenszerű adat generálása
-async function generateRandomRFQ() {
+// A customerIds paramétert a hívó (a /test/:data végpont "fakerfq" ága)
+// adja át, a customers tábla tényleges tartalmából lekérdezve - korábban
+// egy, az akkori éles (AWS RDS) adatbázis konkrét ügyfél-azonosítóival
+// feltöltött, kódba égetett tömb szerepelt itt, ami egy friss/üres
+// adatbázison (pl. helyi teszt- vagy telepítő-varázslós környezet) idegen
+// kulcs kényszer megsértésével elbukott, mivel az ott hivatkozott
+// customer_id értékek nem léteztek.
+async function generateRandomRFQ(customerIds) {
   const tissue = tissues[Math.floor(Math.random() * tissues.length)];
   const plies = Object.keys(pliesOptions)[Math.floor(Math.random() * Object.keys(pliesOptions).length)];
   const diameter = pliesOptions[plies][Math.floor(Math.random() * pliesOptions[plies].length)];
@@ -1107,8 +1111,13 @@ app.get('/test/:data', async (request, response) => {
       await insertCustomers(10); // Példa: 10 rekord létrehozása
       response.status(200).send({ message: 'Adatok beszúrása kész', status: 'success' });
     } else if (head === "fakerfq") {
+      const customersResult = await pool.query('SELECT customer_id FROM customers');
+      const customerIds = customersResult.rows.map(row => row.customer_id);
+      if (customerIds.length === 0) {
+        return response.status(400).send({ message: 'Nincs egyetlen ügyfél sem az adatbázisban - előbb hozz létre ügyfeleket (pl. "fakeuser").' });
+      }
       for (let i = 0; i < 999; i++) {
-        await generateRandomRFQ();
+        await generateRandomRFQ(customerIds);
       }
       response.status(200).send({ message: 'Adatok beszúrása kész', status: 'success' });
     } else {

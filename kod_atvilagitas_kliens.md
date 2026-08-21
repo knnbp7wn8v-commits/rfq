@@ -184,4 +184,23 @@ A fenti implementáció valós böngészőben (Playwright), friss tesztadatbázi
 
 Mindkét hiba azonosítására és javítására a jelenlegi redesign-kör kliensoldali logikájának (`admin.js` `initShadowFilterList()`) tesztelése közben, a "Hozzáadás" funkció végpontok közötti ellenőrzése során került sor — jó példa arra, hogy egy vizuális modernizáció valós funkcionális teszteléssel kombinálva korábban rejtve maradt, éles hibákat is felszínre hozhat.
 
-Hátralévő ütem: Report, Profile, illetve az ajánlatkérési (RFQ builder) nézet átültetése az elfogadott látványterv szerint.
+### 7.3. Report — megvalósult
+
+- **Megosztott alapréteg kiemelése**: mivel a Report oldal fejléce (felső navigáció, márkajelzés, felhasználói chip) vizuálisan és szerkezetileg megegyezik az Admin oldalén már bevezetettel, a közös szabályok (design tokenek, `.topnav`/`.brand`/`.nav-links`/`.user-chip`, gomb- és jelölőnégyzet-alapstílusok) egy új, mindkét oldal által betöltött `public/css/modern-shared.css` fájlba kerültek át az `admin-modern.css`-ből — ez utóbbi mostantól kizárólag a Portfolio fülre jellemző szabályokat tartalmazza. Ez elkerüli a kód-duplikációt a további oldalak (Profile, RFQ builder) bevonásakor is, amelyek ugyanezt az alaprétget fogják használni.
+- **A szűrő-legördülők (Év/Hónap/Időszak/Ügyfél) natív `<select>` elemek maradtak**: a Portfolio fül "shadow select" mintájával szemben itt nem indokolt egyedi legördülő-widget építése — az eredeti UX egyszerű, egyértékű kiválasztás, amit a `change()` függvény már helyesen kezel. A vizuális modernizálás CSS-sel (`appearance:none` + egyedi nyíl-ikon, letiltott állapot stílusa) történt, a natív elem és a hozzá kötött logika módosítása nélkül — ezzel elkerülve egy indokolatlanul összetettebb, billentyűzet-elérhetőségi kockázatot is hordozó egyedi komponens bevezetését.
+- **A riporttípus-választó (`.tabs a`)** kártyaszerű, ikonos "pill" elemekké alakult; a `report1()`–`report5()` és a `change()` függvények által használt `.tabs`/`.active` osztálynevek és `data-value` attribútumok változatlanok maradtak.
+- **Halott kód eltávolítása**: a sosem hivatkozott, üres `<div id="chart"></div>` (sem JS, sem CSS nem hivatkozott rá) törölve.
+- **Kisebb, önmagában is javasolt konzisztencia-javítás**: a felső navigáció "Profile" linkje korábban üres `href=""` értékkel szerepelt (az aktuális oldal újratöltésére futott volna) — az Admin oldalon már helyesen szereplő `href="profile"` értékre javítva.
+- **Kiegészítő szerveroldali módosítás**: a `/report` route (`app.js`) mostantól a bejelentkezett felhasználót (`req.user`) is átadja a nézetnek, hogy a fejléc "Welcome back" felhasználói chip-je (az Admin oldalon már meglévő minta szerint) itt is megjelenhessen, külön adatbázis-lekérdezés nélkül.
+
+### 7.4. Report — a tesztelés során feltárt hibák
+
+A Report oldal valós böngészős, végpontok közötti ellenőrzése (bejelentkezés, mind az 5 riporttípus megjelenítése valós D3.js-diagramokkal, szűrő-legördülők engedélyezés/tiltás logikája) az alábbi hibákat tárta fel:
+
+- **Regresszió, még a redesign lezárása előtt kijavítva**: a diagram-rajzoló kód a `d3.select("svg")` elem-szintű szelektorral kereste meg a rajzolandó `<svg>`-t, ami korábban véletlenül helyesen működött, mivel az oldalon az egyetlen `<svg>` a diagram maga volt. Az új fejléc (márkajelzés) és riporttípus-ikonok miatt az oldalon több `<svg>` is szerepel, ezért a szelektor a lap tetején lévő, nem a diagramhoz tartozó ikont választotta volna ki. Javítva: kifejezetten `d3.select("#svgchart")`-ra.
+- **Pre-existing hiba: `createWeeklyBarChart()` (Szállítási Igény Riport) mezőnév-eltérés**: a függvény a `createChart()` által előkészített, nagy kezdőbetűs mezőnevekkel (`productType`, `totalQuantity`) rendelkező objektumot kapta meg, de a nyers API-válasz kis kezdőbetűs mezőneveit (`producttype`, `totalquantity`) próbálta kiolvasni belőle. Ennek eredményeként minden oszlop `NaN` magasságú (gyakorlatilag láthatatlan) volt, és az x-tengelyen is egyetlen (`undefined`) pozícióra estek volna össze - a böngésző konzolján `<rect> attribute height: Expected length, "NaN"` hibaként jelentkezett. Ez a Report oldal legkevésbé látványos, ötödik fülének diagramja volt, ezért feltehetően régóta észrevétlen maradt. Javítva: a függvény mostantól a neki átadott objektum tényleges mezőneveit használja.
+- **Pre-existing hiba: `/test/:data` "fakerfq" teszt-adatgenerátor kódba égetett, éles ügyfél-azonosítói** — lásd részletesen `kod_atvilagitas_app_js.md`, 6. pont. Ez a Report oldal diagramjainak teszteléséhez szükséges demó-RFQ-adatok generálását akadályozta friss adatbázison; javítva.
+
+### Hátralévő ütem
+
+Profile, illetve az ajánlatkérési (RFQ builder) nézet átültetése az elfogadott látványterv szerint.
