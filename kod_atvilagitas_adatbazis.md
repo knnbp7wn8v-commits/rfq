@@ -367,9 +367,10 @@ Jelezd, melyik szakasszal kezdjünk, vagy ha az egészet egy menetben szeretnéd
 
 ## 9. Megvalósítási állapot
 
-- **1–2. lépés** (`customers.email` `UNIQUE`, FK-k 1.1–1.5, indexek 2.1–2.4): **még nem valósult meg** — külön jóváhagyást igényel.
+- **1. lépés** (`customers.email` `UNIQUE`): **megvalósult** — `db/migrations/004_customers_email_unique.sql`.
+- **2. lépés** (FK-k 1.1–1.5, indexek 2.1–2.4): **megvalósult** — `db/migrations/005_foreign_keys.sql`, `db/migrations/006_indexes.sql`. Az éles export (`mydb_backup.sql`) adatain (13 ügyfél, 1003 rfq-sor) ellenőrizve: nem volt árva hivatkozás egyik kapcsolatnál sem. A 2.3. pontban említett opcionális `EXTRACT(YEAR/MONTH ...)` kifejezés-alapú index a jelenlegi adatmennyiség mellett nem került felvételre.
 - **3. lépés** (`tds` kapcsolat tisztázása): **megtörtént** — a döntés: a mező a `tds.tdsid`-t tárolja. Megvalósítva: `db/migrations/002_tds_tdsid.sql` (a `tds` tábla korábban hiányzó elsődleges kulcsával együtt), valamint az `app.js`/`render.js`/`cart.js` ennek megfelelő módosítása.
-- **`rfq.certification` adatminőségi kérdés (3. pont)**: **még nem valósult meg**.
+- **`rfq.certification` adatminőségi kérdés (3. pont)**: **rövid távú javítás megvalósult** — `db/migrations/007_certification_check.sql` (meglévő "true"/"false" értékek normalizálása "yes"/"no"-ra + `CHECK` kényszer), valamint a `generateRandomRFQ()` teszt-generátor (`app.js`) javítása, hogy a jövőben ne írjon "true"/"false"-t. A középtávú javaslat (tényleges `boolean` típusra alakítás) továbbra sem valósult meg - külön jóváhagyást igényel, mivel a kliensoldali kód ("yes"/"no" checkbox-értékek) és a riport-lekérdezések (`fn_report_certification_demand`) is módosításra szorulnának.
 - **4. lépés** (`schema_migrations` mechanizmus): **megvalósult** — `db/migrate.js`, `db/migrations/001_init.sql`.
 - **5. lépés** (telepítő varázsló, `/setup`): **megvalósult** — `app.js` (`hasActiveAdmin()`, `/setup` GET/POST, egyszer használatos token), `views/setup.ejs`. Lásd README „Az első admin fiók létrehozása” szakasz.
 - **6. lépés** (tárolt függvények): **megvalósult** (a riport-függvények és a `fn_create_order_from_cart`) — `db/migrations/003_stored_functions.sql`.

@@ -1048,7 +1048,12 @@ async function generateRandomRFQ() {
   const grammatura = tissueProperties[tissue].grammatura[Math.floor(Math.random() * tissueProperties[tissue].grammatura.length)];
   const reels = tissueProperties[tissue].reels[Math.floor(Math.random() * tissueProperties[tissue].reels.length)];
   const orderweight = Math.floor(Math.random() * 1000) + 100; // 100 és 1100 között
-  const certification = Math.random() < 0.5; // 50% eséllyel true vagy false
+  // A rfq.certification oszlop a tényleges kliensoldali kitöltés (render.js/
+  // cart.js cert1/cert2 checkbox) szerint "yes"/"no" szöveget vár - egy
+  // logikai érték korábban "true"/"false" stringgé alakulva inkonzisztens
+  // adatot írt volna be. Lásd: kod_atvilagitas_adatbazis.md, 3. pont;
+  // db/migrations/007_certification_check.sql.
+  const certification = Math.random() < 0.5 ? 'yes' : 'no'; // 50% eséllyel yes vagy no
   const weeknum = Math.floor(Math.random() * 52) + 1; // 1-52 között
   const requestdate = new Date(Date.UTC(2023, 0, 1 + Math.floor(Math.random() * 297))).toISOString().split('T')[0]; // 2023.01.01 - 2024.10.24 között
 
