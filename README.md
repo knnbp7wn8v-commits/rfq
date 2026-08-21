@@ -83,28 +83,62 @@ npm install
 
 ### Adatbázis létrehozása
 
-Az alkalmazás PostgreSQL adatbázist használ. A séma (táblák, szekvenciák,
-elsődleges kulcsok) a [`db/schema.sql`](./db/schema.sql) fájlban található,
-amely egy éles adatbázis-exportból lett előállítva, kizárólag a séma
-megtartásával - **adatsorokat szándékosan nem tartalmaz**, mivel a
-repository publikus, és az eredeti export valós ügyféladatokat (e-mail-
-cím, telefonszám, bcrypt jelszó-hash) is tartalmazott volna.
+Az alkalmazás PostgreSQL adatbázist használ. Egy **üres, de már létező**
+adatbázison az alkalmazás induláskor **automatikusan** létrehozza/frissíti
+a sémát: a `db/migrations/` mappában sorszámozott, egyszer lefutó SQL-
+migrációkat alkalmazza (nyilvántartva a `schema_migrations` táblában), és
+csak sikeres migráció után kezd kéréseket fogadni. Lásd: `db/migrate.js`,
+`kod_atvilagitas_adatbazis.md` 5-6. pont. Ez a mechanizmus **kizárólag a
+séma** (táblák/kényszerek/tárolt függvények) szintjét automatizálja -
+magát az adatbázist (`CREATE DATABASE`) szándékosan nem, mivel ehhez az
+alkalmazás DB-felhasználójának a legkisebb jogosultság elvét sértő
+jogosultság kellene.
 
-Üres adatbázis létrehozása és a séma importálása:
+Üres adatbázis létrehozása (a sémát ezt követően az alkalmazás első
+indítása hozza létre):
 
 ```bash
 createdb <adatbázis neve>
+```
+
+Kézi, nem automatikus alkalmazáshoz a [`db/schema.sql`](./db/schema.sql)
+(a migrációk `001_init.sql` alapállapotával megegyező pillanatkép)
+továbbra is felhasználható:
+
+```bash
 psql -h <host> -U <felhasználó> -d <adatbázis neve> -f db/schema.sql
 ```
 
-A séma importálása után az alábbi ún. lookup (törzsadat) táblák
+Meglévő, a migrációs mechanizmus bevezetése előtt kézzel létrehozott
+adatbázison (pl. éles AWS RDS) az alkalmazás felismeri, hogy a séma már
+létezik, és a `001_init.sql`-t nem futtatja újra - csak az azt követő
+migrációkat alkalmazza.
+
+A séma előállítása után az alábbi ún. lookup (törzsadat) táblák
 feltöltése szükséges ahhoz, hogy az ajánlatkérési folyamat választási
 lépései (legördülő listák) működjenek: `diameter`, `eheight`, `grammatura`,
 `plies`, `reels`, `tissue`, `truck`, `weight`, `plie_param`, `ediam_param`,
-`portfolio`, `permissionsets`, `roles`. Emellett legalább egy `status = true`
-(aktivált) rekord szükséges a `customers` táblában a bejelentkezéshez -
-ez a regisztrációs folyamat (`/register`) és az admin oldalról történő
-aktiválás használatával hozható létre lokálisan is.
+`portfolio`, `permissionsets`, `roles`.
+
+### Az első admin fiók létrehozása (telepítő varázsló)
+
+A `/register` végponton regisztrált fiókokat csak admin jogosultsággal
+lehet aktiválni (`customers.status`) - egy teljesen új telepítésen viszont
+még nincs admin, aki ezt megtehetné. Ezt a `/setup` útvonal oldja fel:
+
+1. Indítsd el az alkalmazást (`npm start` / `npm run dev`) egy olyan
+   adatbázison, ahol még nincs `status = true` admin fiók (`role_id = 3`).
+2. Az alkalmazás a naplóba (konzol, éles környezetben AWS CloudWatch) egy
+   egyszer használatos telepítési tokent ír ki, ilyen formában:
+   `Nincs aktív admin fiók - a telepítő varázsló elérhető: /setup?token=...`
+3. Nyisd meg ezt a linket böngészőben, és töltsd ki az admin fiók
+   adatait.
+
+A `/setup` útvonal minden kérésnél ellenőrzi, hogy van-e már aktív admin
+fiók - ha igen (akár az imént létrehozott, akár egy korábbi), az útvonal
+`404`-et ad vissza, tehát csak az első admin létrehozásáig érhető el. A
+token az admin létrehozása után is azonnal érvényét veszti, és minden
+újraindításkor újragenerálódik (amíg nincs aktív admin).
 
 Az alkalmazás a `.env` fájlban megadott kapcsolati adatokkal csatlakozik
 az adatbázishoz. Az alábbi környezeti változókat kell egy `.env` fájlban

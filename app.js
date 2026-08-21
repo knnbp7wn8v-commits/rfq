@@ -1,6 +1,7 @@
 require('dotenv').config();
 
 const logger = require('./logger');
+const { runMigrations } = require('./db/migrate');
 const sessionstore = require('sessionstore');
 const express = require('express');
 const https = require('https');
@@ -13,6 +14,7 @@ const flash = require('connect-flash');
 const fs = require('fs');
 const bodyParser = require('body-parser');
 const faker = require('faker');
+const crypto = require('crypto');
 
 const app = express();
 const port = process.env.APP_PORT || 3000;
@@ -21,6 +23,20 @@ const port = process.env.APP_PORT || 3000;
 const ROLES = {
   ADMIN: 3,
 };
+
+// Egyszer használatos telepítési token a /setup (telepítő varázsló)
+// útvonalhoz - csak akkor generálódik, ha induláskor még nincs aktív admin
+// fiók (lásd az induló async blokkot lejjebb). Lásd:
+// kod_atvilagitas_adatbazis.md, 7.3. pont.
+let setupToken = null;
+
+async function hasActiveAdmin() {
+  const result = await pool.query(
+    'SELECT EXISTS (SELECT 1 FROM customers WHERE role_id = $1 AND status = true) AS exists',
+    [ROLES.ADMIN]
+  );
+  return result.rows[0].exists;
+}
 
 // PostgreSQL connection setup
 /* const pool = new Pool({
@@ -41,14 +57,6 @@ const pool = new Pool({
   password: process.env.DB_PASSWORD,
   port: process.env.DB_PORT
 })
-// Kapcsolat ellenőrzése
-pool.connect()
-    .then(() => {
-      logger.info('Database connected successfully');
-    })
-    .catch(err => {
-      logger.error('Database connection error:', err.stack);
-    });
 
 
 
@@ -61,9 +69,36 @@ const options = {
   key: fs.readFileSync('key.pem'),
   cert: fs.readFileSync('cert.pem')
 };
-https.createServer(options, app).listen(port, () => {
-  logger.info('HTTPS server running on port ' + port);
-});
+// A HTTPS szerver csak sikeres adatbázis-kapcsolat ÉS a lefutott séma-
+// migrációk után kezd kéréseket fogadni - így elkerüljük, hogy az
+// alkalmazás egy inkonzisztens (félig migrált) sémával szolgáljon ki
+// kéréseket. A migráció maga a db/migrations/ mappában sorszámozott .sql
+// fájlokat alkalmazza, egyszer, sorrendben (lásd db/migrate.js,
+// kod_atvilagitas_adatbazis.md 5-6. pont).
+(async () => {
+  try {
+    await pool.query('SELECT 1');
+    logger.info('Database connected successfully');
+    await runMigrations(pool);
+
+    if (!(await hasActiveAdmin())) {
+      // A /setup útvonal (lásd lejjebb) minden kérésnél ellenőrzi, hogy van-e
+      // már aktív admin, de amíg nincs, bárki elérhetné a nyilvánosan
+      // futó (AWS Elastic Beanstalk) végpontot - ez a token szűkíti ezt az
+      // időablakot: csak az fér hozzá a varázslóhoz, aki a szerver naplóját
+      // (CloudWatch) is látja.
+      setupToken = crypto.randomBytes(24).toString('hex');
+      logger.info(`Nincs aktív admin fiók - a telepítő varázsló elérhető: /setup?token=${setupToken}`);
+    }
+
+    https.createServer(options, app).listen(port, () => {
+      logger.info('HTTPS server running on port ' + port);
+    });
+  } catch (err) {
+    logger.error('Adatbázis-kapcsolat vagy migráció sikertelen, az alkalmazás nem indul el:', err);
+    process.exit(1);
+  }
+})();
 app.use(session({
   store: sessionstore.createSessionStore(),
   secret: process.env.SESSION_SECRET,
@@ -371,35 +406,24 @@ async function removeFromCart(cartid, userid) {
 }
 
 async function checkTDS(data) {
-  const query = `SELECT SKU FROM tds WHERE itemtype = $1 AND plies = $2 AND height = $3 AND grammatura = $4 AND diameter = $5 AND ediameter = $6`;
+  // A tdsid is visszaadásra kerül: a kliens ezt tárolja el a kosártételen
+  // (cart.tds / rfq.tds), ha a felhasználó elfogadja a javasolt TDS-t -
+  // korábban csak a SKU-t kapta vissza, amit viszont sehol nem mentett el
+  // ténylegesen. Lásd: kod_atvilagitas_adatbazis.md, 1.6. pont.
+  const query = `SELECT tdsid, sku FROM tds WHERE itemtype = $1 AND plies = $2 AND height = $3 AND grammatura = $4 AND diameter = $5 AND ediameter = $6`;
   const values = [data.itemtype, data.plies, data.height, data.grammatura, data.diameter, data.ediameter];
   const result = await pool.query(query, values);
   return result.rows;
 }
 
 async function createOrder(userid) {
-  // A beszúrás és a kosár ürítése egy tranzakcióban történik, hogy a
-  // megrendelés kétszer beküldve ne duplikálja a korábban már átvitt
-  // tételeket (a kosár korábban sosem ürült ki rendelés után).
-  const client = await pool.connect();
-  try {
-    await client.query('BEGIN');
-    const inserted = await client.query(
-      `INSERT INTO rfq (customer_id, tissue, plies, grammatura, diameter, reels, quotatient, pack1, pack2, orderweight, w1, w2, ediameter, certification, weeknum, tds, _comment)
-       SELECT customer_id, tissue, plies, grammatura, diameter, reels, quotatient, pack1, pack2, orderweight, w1, w2, ediameter, certification, weeknum, tds, _comment
-       FROM cart WHERE customer_id = $1
-       RETURNING *`,
-      [userid]
-    );
-    await client.query('DELETE FROM cart WHERE customer_id = $1', [userid]);
-    await client.query('COMMIT');
-    return inserted.rows;
-  } catch (err) {
-    await client.query('ROLLBACK');
-    throw err;
-  } finally {
-    client.release();
-  }
+  // A beszúrás és a kosár ürítése a fn_create_order_from_cart adatbázis-
+  // függvényben, egyetlen hívással, atomi módon történik - lásd
+  // db/migrations/003_stored_functions.sql, kod_atvilagitas_adatbazis.md
+  // 4.1. pont. A korábbi, itt Node.js oldalon explicit BEGIN/COMMIT/
+  // ROLLBACK-kel megvalósított tranzakció emiatt feleslegessé vált.
+  const result = await pool.query('SELECT * FROM fn_create_order_from_cart($1)', [userid]);
+  return result.rows;
 }
 
 async function removeAllFromCart(userid) {
@@ -840,6 +864,74 @@ app.post('/register', async (req, res) => {
   }
 });
 
+// Telepítő varázsló (setup wizard): kizárólag az első admin fiók
+// létrehozására szolgál olyan telepítésen, ahol a séma már létezik
+// (a runMigrations induláskor lefutott), de még egyetlen aktivált admin
+// sincs - enélkül a /register-en regisztrált fiókokat senki nem tudná
+// aktiválni (a customers.status aktiválása admin jogosultságot igényel).
+// A hasActiveAdmin() ellenőrzés minden egyes kérésnél lefut (nem csak
+// induláskor gyorsítótárazva), így akkor is önmagát zárja be az útvonal,
+// ha egy admin fiók utólag törlésre kerülne. Lásd:
+// kod_atvilagitas_adatbazis.md, 7. pont.
+app.get('/setup', async (req, res) => {
+  try {
+    if (await hasActiveAdmin()) {
+      return res.status(404).send('Not found');
+    }
+    if (!setupToken || req.query.token !== setupToken) {
+      return res.status(403).send('Érvénytelen vagy hiányzó telepítési token. A tokent az alkalmazás a szerver naplójába írja induláskor.');
+    }
+    res.render('setup.ejs', { token: setupToken, error: null });
+  } catch (err) {
+    logger.error('Error rendering /setup:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/setup', async (req, res) => {
+  try {
+    if (await hasActiveAdmin()) {
+      return res.status(404).send('Not found');
+    }
+    const { customer, vat, name, email, phone, password, cpassword, token } = req.body;
+
+    if (!setupToken || token !== setupToken) {
+      return res.status(403).send('Érvénytelen vagy hiányzó telepítési token.');
+    }
+    if (!customer || !vat || !name || !email || !phone || !password) {
+      return res.render('setup.ejs', { token: setupToken, error: 'Minden mező kitöltése kötelező' });
+    }
+    if (!EMAIL_PATTERN.test(email)) {
+      return res.render('setup.ejs', { token: setupToken, error: 'Érvénytelen e-mail cím' });
+    }
+    if (typeof password !== 'string' || password.length < MIN_PASSWORD_LENGTH) {
+      return res.render('setup.ejs', { token: setupToken, error: `A jelszónak legalább ${MIN_PASSWORD_LENGTH} karakter hosszúnak kell lennie` });
+    }
+    if (password !== cpassword) {
+      return res.render('setup.ejs', { token: setupToken, error: 'A két jelszó nem egyezik' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    // A role_id és a status a kliens bemenetétől függetlenül, szerveroldalon
+    // kényszerítve (nem a req.body-ból) - admin jogosultság csak ezen az
+    // úton, közvetlen adatbázis-beszúrással adható.
+    await pool.query(
+      `INSERT INTO customers (customer_name, vat_number, contact_name, email, phone, password, role_id, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, true)`,
+      [customer, vat, name, email, phone, hashedPassword, ROLES.ADMIN]
+    );
+    logger.info('Első admin fiók létrehozva a telepítő varázslón keresztül.');
+    setupToken = null; // egyszer használatos - ezután úgyis hasActiveAdmin() zárja le a route-ot
+    res.redirect('/login');
+  } catch (error) {
+    if (error.code === '23505') { // PostgreSQL unique violation error code
+      return res.render('setup.ejs', { token: setupToken, error: 'Ez az e-mail cím már foglalt' });
+    }
+    logger.error('Error during setup:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
 // Login route
 app.post('/login', passport.authenticate('local', {
   successRedirect: '/protected',
@@ -1028,6 +1120,20 @@ app.get('/test/:data', async (request, response) => {
 // Az elérhető "time" ablakok fehérlistája - lásd views/report.ejs #time select.
 const REPORT_TIME_WINDOWS = new Set(['7 days', '30 days', '3 month', '6 month', '1 year']);
 
+// Diagramtípusonként egy-egy adatbázis-függvény (db/migrations/003_stored_functions.sql)
+// végzi az aggregációt - a korábbi, kézzel összefűzött query/group string-pár
+// megszűnt. A "chart" mező itt is zárt fehérlistaként szolgál: a függvény
+// neve (SQL azonosító, nem paraméterezhető) csak pontos egyezés esetén
+// kerül a lekérdezés szövegébe - ugyanaz a minta, mint az ADMIN_CRUD_TARGETS
+// esetén. Lásd: kod_atvilagitas_adatbazis.md, 4.2. pont.
+const REPORT_FUNCTIONS = {
+  chart1: 'fn_report_tissue_demand',
+  chart2: 'fn_report_weight_layers_demand',
+  chart3: 'fn_report_weekly_tissue_demand',
+  chart4: 'fn_report_certification_demand',
+  chart5: 'fn_report_monthly_demand',
+};
+
 app.get('/api/report/:data', async (req, res) => {
   // Ez az API a /report (admin) oldal diagramjait szolgálja ki, ezért ugyanaz
   // a jogosultsági szint vonatkozik rá, mint a /report route-ra.
@@ -1039,78 +1145,53 @@ app.get('/api/report/:data', async (req, res) => {
     const parsedData = JSON.parse(req.params.data);
     const { chart, year, month, time, company } = parsedData;
 
-    let query = "";
-    let group = "";
-    switch (chart) {
-      case "chart1":
-        query = "SELECT tissue AS productType, SUM(orderweight) AS totalQuantity FROM rfq";
-        group = " GROUP BY tissue";
-        break;
-      case "chart2":
-        query = "SELECT grammatura AS weight, plies AS layers, SUM(orderweight) AS totalQuantity FROM rfq";
-        group = " GROUP BY grammatura, layers";
-        break;
-      case "chart3":
-        query = "SELECT weeknum, tissue AS productType, SUM(orderweight) AS totalQuantity FROM rfq";
-        group = " GROUP BY weeknum, tissue ORDER BY weeknum";
-        break;
-      case "chart4":
-        query = "SELECT certification, SUM(orderweight) AS totalQuantity FROM rfq";
-        group = " GROUP BY certification";
-        break;
-      case "chart5":
-        query = "SELECT EXTRACT(YEAR FROM requestdate) AS year, EXTRACT(MONTH FROM requestdate) AS month, SUM(orderweight) AS totalQuantity FROM rfq";
-        group = " GROUP BY year, month ORDER BY year, month";
-        break;
-      default:
-        return res.status(400).json({ message: 'Unknown chart type' });
+    const fnName = REPORT_FUNCTIONS[chart];
+    if (!fnName) {
+      return res.status(400).json({ message: 'Unknown chart type' });
     }
 
-    // Minden szűrőfeltétel paraméterezve kerül a lekérdezésbe (SQL injection védelem).
-    const conditions = [];
-    const values = [];
-
+    // A szűrőparaméterek minden esetben kötött paraméterként ($1..$4)
+    // jutnak a függvényhívásba - beleértve a "time" ablakot is, amelyet a
+    // függvény ::interval-lá alakít. A fehérlistás (REPORT_TIME_WINDOWS)
+    // ellenőrzést itt is megtartjuk: nem az injection veszélye miatt (egy
+    // kötött paraméter ::interval castolása biztonságos), hanem hogy egy
+    // váratlan string ne okozzon futásidejű konverziós hibát.
+    let yearNum = null;
     if (year) {
-      const yearNum = parseInt(year, 10);
+      yearNum = parseInt(year, 10);
       if (!Number.isInteger(yearNum)) {
         return res.status(400).json({ message: 'Invalid year' });
       }
-      values.push(yearNum);
-      conditions.push(`EXTRACT(YEAR FROM requestdate) = $${values.length}`);
+    }
 
-      if (month) {
-        const monthNum = parseInt(month, 10);
-        if (!Number.isInteger(monthNum)) {
-          return res.status(400).json({ message: 'Invalid month' });
-        }
-        values.push(monthNum);
-        conditions.push(`EXTRACT(MONTH FROM requestdate) = $${values.length}`);
+    let monthNum = null;
+    if (year && month) {
+      monthNum = parseInt(month, 10);
+      if (!Number.isInteger(monthNum)) {
+        return res.status(400).json({ message: 'Invalid month' });
       }
     }
 
+    let timeWindow = null;
     if (time) {
-      // A 'time' értéket egy zárt fehérlistával validáljuk, csak utána
-      // kerülhet (szó szerinti egyezésként) az INTERVAL kifejezésbe -
-      // paraméterként nem adható át, mert a PostgreSQL INTERVAL literál
-      // szintaxisa nem fogadja el a $n helyettesítést ezen a pozíción.
       if (!REPORT_TIME_WINDOWS.has(time)) {
         return res.status(400).json({ message: 'Invalid time window' });
       }
-      conditions.push(`requestdate >= CURRENT_DATE - INTERVAL '${time}'`);
+      timeWindow = time;
     }
 
+    let companyId = null;
     if (company) {
-      const companyId = parseInt(company, 10);
+      companyId = parseInt(company, 10);
       if (!Number.isInteger(companyId)) {
         return res.status(400).json({ message: 'Invalid company' });
       }
-      values.push(companyId);
-      conditions.push(`customer_id = $${values.length}`);
     }
 
-    const where = conditions.length > 0 ? ' WHERE ' + conditions.join(' AND ') : '';
-    const fullQuery = query + where + group;
-    const result = await pool.query(fullQuery, values);
+    const result = await pool.query(
+      `SELECT * FROM ${fnName}($1, $2, $3, $4)`,
+      [yearNum, monthNum, timeWindow, companyId]
+    );
     res.status(200).json(result.rows);
   } catch (error) {
     if (error instanceof SyntaxError) {

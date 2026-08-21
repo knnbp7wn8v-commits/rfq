@@ -1,28 +1,24 @@
 --
--- RFQ alkalmazás - adatbázis séma (DDL), TÖRTÉNETI ALAPÁLLAPOT
+-- 001_init.sql - RFQ alkalmazás, migráció-alapállapot (séma DDL)
 --
--- FONTOS: ez a fájl a db/migrations/001_init.sql-lel megegyező, változatlan
--- pillanatkép - a séma tényleges, aktuális állapotát mostantól a
--- db/migrations/ mappában sorszámozott migrációs fájlok együttesen írják
--- le, amelyeket az alkalmazás induláskor automatikusan alkalmaz (lásd
--- db/migrate.js, app.js). ÚJ sémamódosítást ide, ebbe a fájlba NEM szabad
--- felvenni - helyette db/migrations/00N_....sql. Lásd:
--- kod_atvilagitas_adatbazis.md, 6. pont.
+-- Ez a fájl a db/schema.sql korábbi, önálló referenciadokumentumként
+-- készült tartalmával megegyező alapállapot, a db/migrate.js migrációs
+-- mechanizmusába illesztve. Eredetileg a `mydb_backup.sql` (pg_dump,
+-- PostgreSQL 16) éles exportjából lett előállítva, KIZÁRÓLAG a séma
+-- (tábla-, szekvencia- és kulcsdefiníciók) megtartásával - adatsorokat nem
+-- tartalmaz.
 --
--- Ez a fájl a `mydb_backup.sql` (pg_dump, PostgreSQL 16) éles exportjából
--- lett előállítva, KIZÁRÓLAG a séma (tábla-, szekvencia- és
--- kulcsdefiníciók) megtartásával. A tényleges adatsorok (COPY ... FROM
--- stdin blokkok, köztük a customers tábla valós e-mail-címeket, telefon-
--- számokat és bcrypt jelszó-hasheket tartalmazó rekordjai) szándékosan
--- NINCSENEK ebben a fájlban, mivel a repository publikus.
+-- FONTOS: ezt a fájlt már NEM szabad utólag módosítani (a migrációs
+-- mechanizmus a lefuttatott fájlokat a schema_migrations táblában
+-- tartja nyilván, tartalom-ellenőrzés nélkül) - minden további
+-- sémamódosítást új, sorszámmal növekvő migrációs fájlként kell
+-- hozzáadni (lásd pl. 002_tds_tdsid.sql).
 --
--- Kézi (nem automatikus) alkalmazáshoz továbbra is használható:
---   psql -h <host> -U <felhasználó> -d <adatbázis> -f db/schema.sql
---
--- Megjegyzés: az eredeti adatbázisban a táblák között nincs explicit
--- FOREIGN KEY kényszer definiálva (pg_dump kimenete alapján) - a
--- hivatkozási integritást jelenleg alkalmazásszinten (app.js) kezeli
--- a kód.
+-- Meglévő (a migrációs mechanizmus bevezetése előtt, kézzel psql-lel
+-- létrehozott) adatbázison - pl. éles AWS RDS - ez a fájl automatikusan
+-- NEM fut le újra: a db/migrate.js alapállapot-felismerése észleli, hogy
+-- a "customers" tábla már létezik, és 001_init.sql-t lefuttatás nélkül
+-- alkalmazottként jelöli meg.
 --
 
 SET client_encoding = 'UTF8';

@@ -1,5 +1,4 @@
 function requestforquote() {
-    let tds
     let tissue_value = document.getElementById("Tissue").value;
     let plies_value = document.getElementById("Plies").value;
     let grammatura_value = document.getElementById("Grammatura").value;
@@ -18,15 +17,19 @@ function requestforquote() {
     }
     let orderWeightNum_value = document.getElementById("orderWeightNum").value;
     let weekNum_value = document.getElementById("weekNum").value;
-    let tdscheckvalue = "";
+    // A kosártétel a ténylegesen megtalált és a felhasználó által elfogadott
+    // TDS (Technical Data Sheet) rekord azonosítóját (tds.tdsid) tárolja -
+    // korábban a checkbox "yes"/"no" szövege került ide, amely nem
+    // hivatkozott semmilyen tds rekordra. A matchedTdsId-t a render.js
+    // tdscheck() tölti fel a legutóbbi egyezés alapján. Elutasítás vagy
+    // hiányzó egyezés esetén a mező NULL marad. Lásd:
+    // kod_atvilagitas_adatbazis.md, 1.6. pont.
+    let tdsIdToSend = null;
     let comments = "";
     if (document.getElementById("tds_in1")) {
+        comments = document.getElementById("comments").value;
         if (document.getElementById("tds_in1").checked == true) {
-            tdscheckvalue = document.getElementById("tds_in1").value;
-            comments = document.getElementById("comments").value;
-        } else {
-            tdscheckvalue = document.getElementById("tds_in2").value;
-            comments = document.getElementById("comments").value;
+            tdsIdToSend = matchedTdsId;
         }
     }
 
@@ -43,7 +46,7 @@ function requestforquote() {
             ediameter: ediameter_value,
             certification: certification_value,
             weeknum: weekNum_value,
-            tds: tdscheckvalue,
+            tds: tdsIdToSend,
             comment: comments
         }
     };
@@ -130,12 +133,18 @@ function renderlist(cartlist) {
         lbl10.className = "requestlbl";
         let lbl11 = null;
         let txt01 = null;
-        if (item.tds != "") {
-            lbl11 = createFieldRow("Accepable TDS: ", item.tds);
+        // item.tds mostantól a tds.tdsid egész szám (vagy NULL), nem a
+        // korábbi "yes"/"no" szöveg - a "!= ''" összehasonlítás NULL-ra
+        // tévesen igaz lenne (null != "" === true JS-ben), ezért "!= null"
+        // szükséges. Lásd: kod_atvilagitas_adatbazis.md, 1.6. pont.
+        if (item.tds != null) {
+            lbl11 = createFieldRow("Matched TDS ID: ", item.tds);
             lbl11.className = "requestlbl";
         }
         if (item.comment != "") {
-            txt01 = createFieldRow("Accepable TDS: ", item.comment, "tds_comment");
+            // Korábban tévesen "Accepable TDS: " címkével jelent meg a
+            // megjegyzés mező is (másolási hiba).
+            txt01 = createFieldRow("Comment: ", item.comment, "tds_comment");
             txt01.className = "requestlbl";
         }
         let remdiv = document.createElement("div");
@@ -164,7 +173,7 @@ function renderlist(cartlist) {
         div.appendChild(createBr());
         div.appendChild(lbl10);
         div.appendChild(createBr());
-        if (item.tds != "") {
+        if (item.tds != null) {
             div.appendChild(lbl11);
             div.appendChild(createBr());
         }

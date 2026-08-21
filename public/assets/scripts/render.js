@@ -270,6 +270,11 @@ var pack1, pack2, totalTrucks, pertrack, TotalWeight = 0;
 var x, y, o, weight_xml, tds_xml = "";
 var quotatient = 0;
 var weight, orderWeight, weight_t, w1, w2 = 0;
+// Az utoljára megtalált, egyező TDS (Technical Data Sheet) rekord
+// azonosítója (tds.tdsid) - a tdscheck() tölti fel, a cart.js
+// requestforquote() olvassa ki a kosárba helyezéskor, ha a felhasználó
+// elfogadta a javasolt TDS-t. Lásd: kod_atvilagitas_adatbazis.md, 1.6. pont.
+var matchedTdsId = null;
 // Az Ediameter legördülő opcióihoz tartozó súlyértékeket egy, az adott
 // opció-értékhez kötött Map-ben tároljuk, nem egy a switch-ág
 // mellékhatásaként beállított, törékeny globális változóban.
@@ -740,10 +745,18 @@ function tdscheck() {
       })
       .then(checkResponse)
       .then(data => {
-        if (data.counter.rowCount > 0) {
-            document.getElementById("tds_div").innerHTML = "";
+        // A szerver válasza { message, data: [...] } alakú (lásd app.js
+        // checkTDS/"tdscheck" ág) - a korábbi data.counter.rowCount/
+        // data.counter.rows[0] hivatkozás nem létező mezőre mutatott, ezért
+        // a TDS-egyezés kliensoldalon soha nem jelent meg (a .catch mindig
+        // "Failed to check..." hibaüzenetet adott vissza). Lásd:
+        // kod_atvilagitas_adatbazis.md.
+        document.getElementById("tds_div").innerHTML = "";
+        matchedTdsId = null;
+        if (data.data && data.data.length > 0) {
             var tdslbldiv = createDiv("tdslbldiv");
-            const sku = data.counter.rows[0].sku;
+            const sku = data.data[0].sku;
+            matchedTdsId = data.data[0].tdsid;
             const tdsLink = document.createElement("a");
             tdsLink.setAttribute("target", "blank");
             // A sku értéket URL-komponensként escapeljük, hogy egy benne lévő

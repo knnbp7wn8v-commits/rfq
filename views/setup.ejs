@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" type="text/css" href="css/style.css" />
+<title>Initial setup</title>
+</head>
+<body>
+    <div class="form-container">
+        <form action="/setup" method="post">
+           <h3>initial setup - create the first admin account</h3>
+           <% if (typeof error !== 'undefined' && error) { %>
+             <span class="error-msg"><%= error %></span>
+           <% } %>
+           <input type="text" name="customer" id="customer" required placeholder="enter the company's name">
+           <input type="text" name="vat" id="vat" required placeholder="enter the VAT number">
+           <input type="text" name="name" id="name" required placeholder="enter the contact name">
+           <input type="email" name="email" id="email" required placeholder="enter your email">
+           <input type="tel" name="phone" id="phone" required placeholder="enter your phone number">
+           <input type="password" name="password" id="password" required placeholder="enter your password">
+           <input type="password" name="cpassword" id="cpassword" required placeholder="confirm your password">
+           <input type="hidden" name="token" value="<%= token %>">
+           <input type="submit" name="submit" id="submit" value="create admin account" class="form-btn">
+        </form>
+    </div>
+</body>
+</html>
