@@ -117,11 +117,14 @@ migrációkat alkalmazza.
 A `permissionsets` és `roles` táblákat - mivel tartalmuk nem üzleti adat,
 hanem az alkalmazás logikájába kódolt, rögzített referenciaadat
 (`app.js`: `ROLES.ADMIN`) - a migráció automatikusan feltölti
-(`db/migrations/009_seed_roles.sql`). Az alábbi további lookup (törzsadat)
-táblák kézi feltöltése szükséges ahhoz, hogy az ajánlatkérési folyamat
-választási lépései (legördülő listák) működjenek: `diameter`, `eheight`,
-`grammatura`, `plies`, `reels`, `tissue`, `truck`, `weight`, `plie_param`,
-`ediam_param`, `portfolio`.
+(`db/migrations/009_seed_roles.sql`). Ugyanígy automatikusan feltöltésre
+kerül a gyártó termékportfólióját leíró törzsadat is - `diameter`,
+`eheight`, `grammatura`, `plies`, `reels`, `tissue`, `truck`, `weight`,
+`plie_param`, `ediam_param`, `portfolio`, `tds` -, amely az ajánlatkérési
+folyamat egymásra épülő választási lépéseinek (legördülő listák) alapja
+(`db/migrations/010_seed_reference_data.sql`). Ez a törzsadat jelenleg csak
+a szállító adminisztrátorán keresztül, adatbázis-szinten karbantartható -
+az adminisztrációs felület idevágó kezelőfelülete még nem készült el.
 
 ### Az első admin fiók létrehozása (telepítő varázsló)
 
