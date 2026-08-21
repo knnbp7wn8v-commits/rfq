@@ -81,7 +81,36 @@ cd rfq
 npm install
 ```
 
-Az alkalmazás futtatásához szükséges környezeti változókat egy `.env` fájlban kell megadni a projekt gyökerében (a fájl biztonsági okokból **nincs** verziókezelve). Az alkalmazás a `dotenv` modulon keresztül olvassa be az alábbi jellegű beállításokat:
+### Adatbázis létrehozása
+
+Az alkalmazás PostgreSQL adatbázist használ. A séma (táblák, szekvenciák,
+elsődleges kulcsok) a [`db/schema.sql`](./db/schema.sql) fájlban található,
+amely egy éles adatbázis-exportból lett előállítva, kizárólag a séma
+megtartásával - **adatsorokat szándékosan nem tartalmaz**, mivel a
+repository publikus, és az eredeti export valós ügyféladatokat (e-mail-
+cím, telefonszám, bcrypt jelszó-hash) is tartalmazott volna.
+
+Üres adatbázis létrehozása és a séma importálása:
+
+```bash
+createdb <adatbázis neve>
+psql -h <host> -U <felhasználó> -d <adatbázis neve> -f db/schema.sql
+```
+
+A séma importálása után az alábbi ún. lookup (törzsadat) táblák
+feltöltése szükséges ahhoz, hogy az ajánlatkérési folyamat választási
+lépései (legördülő listák) működjenek: `diameter`, `eheight`, `grammatura`,
+`plies`, `reels`, `tissue`, `truck`, `weight`, `plie_param`, `ediam_param`,
+`portfolio`, `permissionsets`, `roles`. Emellett legalább egy `status = true`
+(aktivált) rekord szükséges a `customers` táblában a bejelentkezéshez -
+ez a regisztrációs folyamat (`/register`) és az admin oldalról történő
+aktiválás használatával hozható létre lokálisan is.
+
+Az alkalmazás a `.env` fájlban megadott kapcsolati adatokkal csatlakozik
+az adatbázishoz. Az alábbi környezeti változókat kell egy `.env` fájlban
+megadni a projekt gyökerében (a fájl biztonsági okokból **nincs**
+verziókezelve). Az alkalmazás a `dotenv` modulon keresztül olvassa be az
+alábbi jellegű beállításokat:
 
 ```
 DB_HOST=<postgresql host>
