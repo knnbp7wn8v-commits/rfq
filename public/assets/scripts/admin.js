@@ -9,18 +9,29 @@ function portfolio_render(data) {
    for (let row of data) {
       table.insertRow();
       let newCell = table.rows[table.rows.length - 1].insertCell();
+      newCell.className = "td-select";
       const chkbox = document.createElement("input");
       chkbox.setAttribute("type", "checkbox");
       chkbox.setAttribute("id", row.id);
       newCell.appendChild(chkbox);
       newCell = table.rows[table.rows.length - 1].insertCell();
-      newCell.textContent = row.tissue;
+      const tissuePill = document.createElement("span");
+      tissuePill.className = "tissue-pill";
+      tissuePill.textContent = row.tissue;
+      newCell.appendChild(tissuePill);
       newCell = table.rows[table.rows.length - 1].insertCell();
       newCell.textContent = row.reel + " cm";
       newCell = table.rows[table.rows.length - 1].insertCell();
       newCell.textContent = row.grammatura + " gsm";
    }
-   document.getElementById("div_2a").appendChild(table);
+   // Megjegyzés: korábban itt egy "document.getElementById('div_2a').appendChild(table)"
+   // hívás állt, ami a táblázatot a div_2a UTOLSÓ gyermekévé tette volna - a jelenlegi
+   // (kártyás) elrendezésben a div_2a a táblázaton kívül egy fejlécet és a lapozó
+   // vezérlőket is tartalmazza, ezért ez a hívás a táblázatot a lapozó ALÁ helyezte
+   // volna át minden szűrés/hozzáadás/törlés után. A hívás valójában feleslegessé is
+   // vált: a "table" objektum a getElementById("portfolio") révén már a DOM megfelelő
+   // helyén van, a sorok deleteRow/insertRow általi módosítása nem igényli az elem
+   // újbóli beillesztését.
 }
 
 function users_render(data) {
@@ -494,3 +505,50 @@ function handleKeyUp2() {
       usersfilter();
    }, 1000);
 }
+
+/**
+ * A Portfolio fül Tissues/Reels/Grammatura szűrői korábban natív
+ * <select>/<select multiple> listaként jelentek meg. A modernizált
+ * felületen ezeket egy jelölőnégyzet-/rádiógomb-listás megjelenés
+ * váltja, DE a mögöttes <select> elemek (id="tissues"/"reels"/
+ * "grammatura") a DOM-ban megmaradnak - csak vizuálisan rejtve -,
+ * mert a ".add" gombra kattintva ezekből olvassa ki a kiválasztott
+ * értékeket (option:checked) a lentebbi, változatlanul hagyott
+ * eseménykezelő. Ez a függvény szinkronban tartja a látható
+ * jelölőnégyzeteket/rádiógombokat a mögöttes <select> elem
+ * option.selected állapotával, hogy a meglévő "Add" logika
+ * módosítás nélkül tovább működjön.
+ */
+function initShadowFilterList(listId, selectId) {
+   const list = document.getElementById(listId);
+   const select = document.getElementById(selectId);
+   if (!list || !select) {
+      return;
+   }
+   const inputs = list.querySelectorAll('input[data-option-index]');
+   function syncShadowSelect() {
+      inputs.forEach(function (inp) {
+         const idx = Number(inp.dataset.optionIndex);
+         if (select.options[idx]) {
+            select.options[idx].selected = inp.checked;
+         }
+      });
+   }
+   inputs.forEach(function (input) {
+      input.addEventListener('change', syncShadowSelect);
+   });
+   // Kezdeti szinkronizáció: a Tissues szűrő első eleme pl. már
+   // betöltéskor be van jelölve (lásd admin.ejs, idx === 0 'checked'),
+   // 'change' esemény nélkül. Enélkül a mögöttes <select> egyetlen
+   // option-je sem lenne "selected", és az "Add" gomb kattintásakor
+   // az #tissues option:checked lekérdezés üres NodeList-et adna
+   // vissza, ami "Cannot read properties of undefined (reading
+   // 'value')" hibát okozott a hozzáadás logikájában.
+   syncShadowSelect();
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+   initShadowFilterList('tissues-filter-list', 'tissues');
+   initShadowFilterList('reels-filter-list', 'reels');
+   initShadowFilterList('grammatura-filter-list', 'grammatura');
+});

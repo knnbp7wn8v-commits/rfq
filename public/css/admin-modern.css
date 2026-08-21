@@ -1,0 +1,501 @@
+/* ============================================================
+   Admin felület - modern UI (Portfolio fül + közös fejléc)
+   ============================================================
+   Ezt a fájlt kizárólag a views/admin.ejs tölti be, tehát a
+   szabályai nem hathatnak más oldalra. Az admin.ejs-en BELÜL
+   viszont a Parameters/Others/Customers/Requests/Test fülek
+   tartalma egyelőre a régi, style.css-ből örökölt megjelenést
+   használja (ütemezett, szakaszos átalakítás - lásd a
+   szakdolgozat-konzultációt) - ezért minden itteni szabály a
+   ".modern-ui" osztály-előtaggal van ellátva. Ez nem csupán
+   névtér: a style.css számos globális, elem-szintű szabályt
+   definiál (pl. "div", "button", "a:link", "svg"), amelyek a
+   CSS-specificitási szabályok szerint (osztály > elem, illetve
+   elem+pszeudo-osztály is erősebb egy önálló osztálynál) csak
+   egy hasonlóan- vagy magasabb specificitású szelektorral
+   írhatók felül megbízhatóan, betöltési sorrendtől függetlenül.
+   A ".modern-ui X" alak minden esetben legalább két
+   osztály-szintű specificitást ad, ami biztosan felülír minden
+   érintett globális szabályt anélkül, hogy a még nem
+   modernizált fülekhez hozzá kellene nyúlni.
+   ============================================================ */
+
+.modern-ui {
+  --accent: oklch(46% 0.12 246);
+  --accent-hover: oklch(40% 0.13 246);
+  --accent-tint: oklch(95% 0.018 246);
+  --accent-tint-strong: oklch(89% 0.045 246);
+  --ink: oklch(21% 0.02 250);
+  --ink-2: oklch(45% 0.018 250);
+  --ink-3: oklch(62% 0.014 250);
+  --surface: oklch(97.5% 0.003 250);
+  --card: oklch(100% 0 0);
+  --border: oklch(90% 0.008 250);
+  --border-2: oklch(84% 0.01 250);
+}
+
+.modern-ui, .modern-ui * {
+  box-sizing: border-box;
+}
+
+.modern-ui {
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  color: var(--ink);
+}
+
+/* ---- gomb és link alapok (felülírja a style.css "button"/"a:link" stb.
+       globális szabályait a fenti specificitási megfontolás szerint) ---- */
+
+.modern-ui button {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 13.5px;
+  border-radius: 8px;
+  padding: 9px 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.modern-ui .btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+.modern-ui .btn-primary:hover {
+  background: var(--accent-hover);
+  color: #fff;
+}
+
+.modern-ui .btn-ghost {
+  background: var(--card);
+  color: var(--ink-2);
+  border-color: var(--border-2);
+}
+.modern-ui .btn-ghost:hover {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.modern-ui button svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+}
+
+.modern-ui a.nav-link {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+  font-size: 14.5px;
+  color: var(--ink-2);
+  padding: 8px 14px;
+  border-radius: 8px;
+  text-decoration: none;
+}
+.modern-ui a.nav-link:hover {
+  color: var(--ink);
+  background: var(--surface);
+}
+.modern-ui a.nav-link.active {
+  color: var(--accent);
+  background: var(--accent-tint);
+}
+
+.modern-ui svg { color: inherit; }
+
+/* ---- felső navigáció ---- */
+
+.modern-ui .topnav {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  max-height: none;
+}
+.modern-ui .topnav-left {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+.modern-ui .brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.modern-ui .brand-mark {
+  width: 26px;
+  height: 26px;
+  color: var(--accent);
+  flex: 0 0 auto;
+}
+.modern-ui .brand-name {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--ink);
+}
+.modern-ui .nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.modern-ui .topnav-right {
+  display: flex;
+  align-items: center;
+}
+.modern-ui .user-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.modern-ui .avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  flex: 0 0 auto;
+}
+.modern-ui .user-name {
+  font-size: 13.5px;
+  color: var(--ink-2);
+  font-weight: 500;
+}
+.modern-ui .user-name strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* ---- fül-sáv (subnav) ---- */
+
+.modern-ui .subnav {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 0 28px;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  height: 52px;
+  overflow: visible;
+  max-height: none;
+}
+.modern-ui .subnav-tab {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--ink-2);
+  padding: 0;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  border-bottom: 2.5px solid transparent;
+  background: transparent;
+  border-radius: 0;
+  margin: 0;
+  float: none;
+}
+.modern-ui .subnav-tab:hover {
+  background: transparent;
+  color: var(--ink);
+}
+.modern-ui .subnav-tab.active {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+  background: transparent;
+}
+
+/* ---- Portfolio fül elrendezés ---- */
+
+.modern-ui.tabcontent#Portfolios {
+  padding: 0;
+  display: flex;
+  align-items: stretch;
+}
+.modern-ui .p-sidebar {
+  width: 264px;
+  flex: 0 0 auto;
+  border-right: 1px solid var(--border);
+  background: var(--card);
+  padding: 22px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.modern-ui .p-content {
+  flex: 1 1 auto;
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+  background: var(--surface);
+}
+
+/* ---- szűrő csoportok (Tissues / Reels / Grammatura) ---- */
+
+.modern-ui .filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.modern-ui .filter-title {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.modern-ui .filter-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  max-height: 168px;
+  overflow-y: auto;
+  border-radius: 8px;
+}
+.modern-ui .filter-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin: 0;
+}
+.modern-ui .filter-row:hover {
+  background: var(--surface);
+}
+.modern-ui .filter-row:has(input:checked) {
+  background: var(--accent-tint-strong);
+}
+.modern-ui .filter-row-label {
+  font-size: 13.5px;
+  color: var(--ink);
+}
+.modern-ui .filter-row:has(input:checked) .filter-row-label {
+  font-weight: 600;
+  color: var(--accent-hover);
+}
+.modern-ui select.shadow-select {
+  display: none;
+}
+
+/* ---- egyedi jelölőnégyzet / rádiógomb kinézet ---- */
+
+.modern-ui input[type="checkbox"],
+.modern-ui input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1.5px solid var(--border-2);
+  background: var(--card);
+  position: relative;
+  cursor: pointer;
+  flex: 0 0 auto;
+  margin: 0;
+  vertical-align: middle;
+}
+.modern-ui input[type="checkbox"]:checked,
+.modern-ui input[type="radio"]:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.modern-ui input[type="checkbox"]:checked::after,
+.modern-ui input[type="radio"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 5px;
+  height: 9px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* ---- tartalom fejléc ---- */
+
+.modern-ui .content-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.modern-ui .content-title {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+}
+.modern-ui .content-title h1 {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--ink);
+  margin: 0;
+}
+.modern-ui .content-title .count {
+  font-size: 14px;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+.modern-ui .head-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ---- adattábla kártya ---- */
+
+.modern-ui .table-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.modern-ui table#portfolio {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  text-align: left;
+}
+.modern-ui table#portfolio thead th {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 11.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--border);
+  background: var(--card);
+  vertical-align: middle;
+  text-align: left;
+}
+.modern-ui table#portfolio th.th-select {
+  width: 42px;
+}
+.modern-ui .th-label {
+  display: block;
+  margin-bottom: 6px;
+}
+.modern-ui .th-search {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid var(--border-2);
+  border-radius: 6px;
+  padding: 5px 8px;
+  background: var(--surface);
+}
+.modern-ui .th-search svg {
+  width: 12px;
+  height: 12px;
+  color: var(--ink-3);
+  flex: 0 0 auto;
+}
+.modern-ui .th-search input[type="search"] {
+  border: none;
+  background: transparent;
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  font-weight: 400;
+  font-size: 12.5px;
+  color: var(--ink);
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  height: auto;
+  max-width: none;
+}
+.modern-ui .th-search input[type="search"]::placeholder {
+  color: var(--ink-3);
+}
+
+.modern-ui table#portfolio td {
+  padding: 11px 18px;
+  font-size: 13.5px;
+  color: var(--ink);
+  border-bottom: 1px solid var(--border);
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  vertical-align: middle;
+  font-variant-numeric: tabular-nums;
+  text-align: left;
+}
+.modern-ui table#portfolio td.td-select {
+  width: 42px;
+}
+.modern-ui table#portfolio tbody tr:nth-child(even),
+.modern-ui table#portfolio tr:nth-child(even),
+.modern-ui table#portfolio tbody tr:nth-child(odd),
+.modern-ui table#portfolio tr:nth-child(odd) {
+  background-color: transparent;
+}
+.modern-ui table#portfolio tr:hover td {
+  background: var(--surface);
+}
+.modern-ui table#portfolio tr:last-child td {
+  border-bottom: none;
+}
+.modern-ui .tissue-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 100px;
+  font-size: 12.5px;
+  font-weight: 600;
+  background: var(--accent-tint);
+  color: var(--accent-hover);
+}
+
+/* ---- lapozó ---- */
+
+.modern-ui #pagination-controls {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 12px 18px;
+  border-top: 1px solid var(--border);
+  margin: 0;
+}
+.modern-ui #pagination-controls button {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  border: 1px solid var(--border-2);
+  background: var(--card);
+  color: var(--ink-2);
+  padding: 0;
+}
+.modern-ui #pagination-controls button:hover {
+  background: var(--surface);
+  color: var(--ink);
+}
+.modern-ui #page-info {
+  font-size: 13px;
+  color: var(--ink-2);
+  padding: 0 6px;
+  font-weight: 500;
+  margin: 0 !important;
+}

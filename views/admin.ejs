@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="css/style.css" />
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+    <link rel="stylesheet" type="text/css" href="css/admin-modern.css" />
     <title>Request for Order</title>
     <script src="assets/scripts/admin.js"></script>
     <script src="assets/scripts/common.js"></script>
@@ -21,82 +23,162 @@
 
 <body>
     <div class="wrapper">
-    <div class="menu">
-        <span><a href="protected">Home</a></span>
-        <span><a href="profile">Profile</a></span>
-        <% if (data[11].rows[0].role_id==3 ) { %>
-            <span><a href="report">Report</a></span>
-            <% } else if (data[11].rows[0].role_id==2) { %>
-                <span><a href="report">Report</a></span>
-                <% } %>
-        
-        
-        <% if (data[11].rows[0].role_id==3) { %>
-            <span><a href="admin">Admin</a></span>
-            <% } else { %>
-
-                <% } %>
-    </div>
-    <div class="tab">
-        <button class="tablinks" onclick="openTab(event, 'Portfolios')">Portfolio</button>
-        <button class="tablinks" onclick="openTab(event, 'Parameters')">Parameters</button>
-        <button class="tablinks" onclick="openTab(event, 'Others')">Others</button>
-        <button class="tablinks" onclick="openTab(event, 'Customers')">Customers</button>
-        <button class="tablinks" onclick="openTab(event, 'Requests')">Requests</button>
-        <button class="tablinks" onclick="openTab(event, 'Test')">Test</button>
-        <span id="name">Welcome back: <%= data[11].rows[0].customer_name %></span>
-    </div>
-    <div id="Portfolios" class="tabcontent" style="display: flex !important;">
-        <div id="div_1">
-            <label class="labelclass selectlabel">Tissues</label>
-            <select id="tissues" size="5">
-                <% data[0].rows.forEach(function(tissue) { %>
-                    <option value="<%= tissue.tissue %>">
-                        <%= tissue.tissue %>
-                    </option>
-                    <% }); %>
-            </select><br>
-            <label class="labelclass selectlabel">Reels</label>
-            <select id="reels" multiple size="10">
-                <% data[2].rows.forEach(function(r) { %>
-                    <option value="<%= r.reels %>">
-                        <%= r.reels %>
-                    </option>
-                    <% }); %>
-            </select><br>
-            <label class="labelclass selectlabel">Grammatura</label>
-            <select id="grammatura" multiple size="10">
-                <% data[1].rows.forEach(function(gr) { %>
-                    <option value="<%= gr.grammatura %>">
-                        <%= gr.grammatura %> gsm
-                    </option>
-                    <% }); %>
-            </select><br>
-            <button id="tissue_add" class="add">Add</button>
+    <div class="menu modern-ui">
+        <div class="topnav">
+            <div class="topnav-left">
+                <div class="brand">
+                    <svg class="brand-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="9"></circle>
+                        <circle cx="12" cy="12" r="4"></circle>
+                    </svg>
+                    <span class="brand-name">RFQ</span>
+                </div>
+                <nav class="nav-links">
+                    <a class="nav-link" href="protected">Home</a>
+                    <a class="nav-link" href="profile">Profile</a>
+                    <% if (data[11].rows[0].role_id==3 ) { %>
+                        <a class="nav-link" href="report">Report</a>
+                        <% } else if (data[11].rows[0].role_id==2) { %>
+                            <a class="nav-link" href="report">Report</a>
+                            <% } %>
+                    <% if (data[11].rows[0].role_id==3) { %>
+                        <a class="nav-link active" href="admin">Admin</a>
+                        <% } %>
+                </nav>
+            </div>
+            <div class="topnav-right">
+                <div class="user-chip">
+                    <span class="avatar"><%= (data[11].rows[0].customer_name || '?').trim().charAt(0).toUpperCase() %></span>
+                    <span class="user-name" id="name">Welcome back: <strong><%= data[11].rows[0].customer_name %></strong></span>
+                </div>
+            </div>
         </div>
-        <div id="div_2">
-            <div id="div_2a">
-                <label class="labelclass">Portfolio (<span id="portfolio_nr">
-                        <%= data[3].rowCount %>
-                    </span>)</label>
+    </div>
+    <div class="tab modern-ui">
+        <div class="subnav">
+            <button class="tablinks subnav-tab" onclick="openTab(event, 'Portfolios')">Portfolio</button>
+            <button class="tablinks subnav-tab" onclick="openTab(event, 'Parameters')">Parameters</button>
+            <button class="tablinks subnav-tab" onclick="openTab(event, 'Others')">Others</button>
+            <button class="tablinks subnav-tab" onclick="openTab(event, 'Customers')">Customers</button>
+            <button class="tablinks subnav-tab" onclick="openTab(event, 'Requests')">Requests</button>
+            <button class="tablinks subnav-tab" onclick="openTab(event, 'Test')">Test</button>
+        </div>
+    </div>
+    <div id="Portfolios" class="tabcontent modern-ui" style="display: flex !important;">
+        <div id="div_1" class="p-sidebar">
+
+            <div class="filter-group">
+                <div class="filter-title">Tissues</div>
+                <div class="filter-list" id="tissues-filter-list">
+                    <% data[0].rows.forEach(function(tissue, idx) { %>
+                        <label class="filter-row">
+                            <input type="radio" name="tissue-radio" data-option-index="<%= idx %>" <%= idx === 0 ? 'checked' : '' %>>
+                            <span class="filter-row-label"><%= tissue.tissue %></span>
+                        </label>
+                        <% }); %>
+                </div>
+                <select id="tissues" size="5" class="shadow-select" aria-hidden="true" tabindex="-1">
+                    <% data[0].rows.forEach(function(tissue) { %>
+                        <option value="<%= tissue.tissue %>">
+                            <%= tissue.tissue %>
+                        </option>
+                        <% }); %>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <div class="filter-title">Reels</div>
+                <div class="filter-list" id="reels-filter-list">
+                    <% data[2].rows.forEach(function(r, idx) { %>
+                        <label class="filter-row">
+                            <input type="checkbox" data-option-index="<%= idx %>">
+                            <span class="filter-row-label"><%= r.reels %></span>
+                        </label>
+                        <% }); %>
+                </div>
+                <select id="reels" multiple size="10" class="shadow-select" aria-hidden="true" tabindex="-1">
+                    <% data[2].rows.forEach(function(r) { %>
+                        <option value="<%= r.reels %>">
+                            <%= r.reels %>
+                        </option>
+                        <% }); %>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <div class="filter-title">Grammatura</div>
+                <div class="filter-list" id="grammatura-filter-list">
+                    <% data[1].rows.forEach(function(gr, idx) { %>
+                        <label class="filter-row">
+                            <input type="checkbox" data-option-index="<%= idx %>">
+                            <span class="filter-row-label"><%= gr.grammatura %> gsm</span>
+                        </label>
+                        <% }); %>
+                </div>
+                <select id="grammatura" multiple size="10" class="shadow-select" aria-hidden="true" tabindex="-1">
+                    <% data[1].rows.forEach(function(gr) { %>
+                        <option value="<%= gr.grammatura %>">
+                            <%= gr.grammatura %> gsm
+                        </option>
+                        <% }); %>
+                </select>
+            </div>
+
+            <button id="tissue_add" class="add btn-primary" style="margin-top:auto;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Add
+            </button>
+        </div>
+        <div id="div_2" class="p-content">
+            <div id="div_2a" class="table-card">
+                <div class="content-head" style="padding: 18px 18px 0;">
+                    <div class="content-title">
+                        <h1>Portfolio</h1>
+                        <span class="count">(<span id="portfolio_nr"><%= data[3].rowCount %></span> tétel)</span>
+                    </div>
+                    <div class="head-actions">
+                        <button id="btn2" class="del btn-ghost">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            Delete
+                        </button>
+                    </div>
+                </div>
                 <table id="portfolio">
                     <thead>
                     <tr>
-                        <th>Select All<br><input type="checkbox" id="selectall" value="portfolio"
+                        <th class="th-select"><input type="checkbox" id="selectall" value="portfolio"
                                 onchange="selectall(this)" /></th>
-                        <th>Tissue<br><input type="search" id="s1" name="q" placeholder="Tissue filter"
-                                aria-label="Search through site content" /></th>
-                        <th>Reel<br><input type="search" id="s2" name="q" placeholder="Reel filter"
-                                aria-label="Search through site content" /></th>
-                        <th>Grammatura<br><input type="search" id="s3" name="q" placeholder="Grammatura filter"
-                                aria-label="Search through site content" /></th>
+                        <th>
+                            <span class="th-label">Tissue</span>
+                            <span class="th-search">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                                <input type="search" id="s1" name="q" placeholder="Tissue filter"
+                                    aria-label="Search through site content" />
+                            </span>
+                        </th>
+                        <th>
+                            <span class="th-label">Reel</span>
+                            <span class="th-search">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                                <input type="search" id="s2" name="q" placeholder="Reel filter"
+                                    aria-label="Search through site content" />
+                            </span>
+                        </th>
+                        <th>
+                            <span class="th-label">Grammatura</span>
+                            <span class="th-search">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                                <input type="search" id="s3" name="q" placeholder="Grammatura filter"
+                                    aria-label="Search through site content" />
+                            </span>
+                        </th>
                     </tr>
                 </thead>
                     <% data[3].rows.forEach(function(pr) { %>
                         <tr>
-                            <td><input type="checkbox" id="<%= pr.id %>" /></td>
+                            <td class="td-select"><input type="checkbox" id="<%= pr.id %>" /></td>
                             <td>
-                                <%= pr.tissue %>
+                                <span class="tissue-pill"><%= pr.tissue %></span>
                             </td>
                             <td>
                                 <%= pr.reel %> cm
@@ -107,18 +189,14 @@
                         </tr>
                         <% }); %>
                 </table>
-            </div>
-            <div id="div_2b">
-                <button id="btn2" class="del">Delete</button>
+                <!-- Lapozó vezérlők -->
+                <div id="pagination-controls">
+                    <button id="prev-page" aria-label="Előző oldal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+                    <span id="page-info"></span>
+                    <button id="next-page" aria-label="Következő oldal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
+                </div>
             </div>
         </div>
-        <!-- Lapozó vezérlők -->
-    <div id="pagination-controls" style="text-align: center; margin-top: 10px;">
-        <button id="prev-page">Előző</button>
-        <span id="page-info" style="margin: 0 15px;"></span>
-        <button id="next-page">Következő</button>
-      </div>
-    </div>
     </div>
     <div id="Parameters" class="tabcontent">
         <div id="div_3">
@@ -614,11 +692,26 @@
             fetch('/mw/' + encodeURIComponent(JSON.stringify({ head: "add", target: target, data: rows })), { method: 'GET' })
                 .then(checkResponse)
                 .then(function (data) {
-                    time = Math.trunc(data.time / 1000);
-                    update();
+                    // Megjegyzés: itt korábban egy "update();" hívás állt, holott
+                    // sehol nem létezett ilyen nevű függvény a kódbázisban - ez
+                    // minden sikeres hozzáadás után egy el nem kapott
+                    // ReferenceError-t dobott, ami megszakította ennek a .then()
+                    // ágnak a lefutását: sem a táblázat (portfolio_render stb.)
+                    // nem frissült, sem a sikeres mentésről szóló üzenet nem
+                    // jelent meg - a felhasználó helyette egy hibaüzenetet
+                    // látott, miközben a szerveroldali beszúrás valójában
+                    // sikeres volt. A hívás - egy hasonlóan hasznon kívüli
+                    // "time = Math.trunc(data.time / 1000);" sorral együtt,
+                    // amelynek eredményét semmi nem használta fel - törölve.
                     switch (e.srcElement.id) {
                         case "tissue_add":
                             portfolio_render(data.data);
+                            // Az elemszám-számláló korábban csak a filter()
+                            // függvényben frissült, hozzáadás után nem - így
+                            // sikeres mentés után is a régi (eggyel kisebb)
+                            // érték maradt látható a "Portfolio (N tétel)"
+                            // fejlécben, amíg a felhasználó nem szűrt.
+                            document.getElementById("portfolio_nr").innerHTML = (data.data).length;
                             break;
                         case "plies_add":
                             plie_param_render(data.data);

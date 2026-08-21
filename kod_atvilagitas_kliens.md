@@ -164,3 +164,24 @@ Javaslat hosszabb távra: a végleges RFQ-adatokat (kapcsolattartói és száll�
 5. A 2.2–2.4 és a Clean Code megfigyelések (5. szakasz) alacsonyabb sürgősségűek, inkább a következő nagyobb refaktorálási körben érdemesek elvégzésre.
 
 Kérlek, jelezd, ha ebből a körből is a "kezdd el a javításokat" utasítással szeretnéd folytatni — ha igen, javaslom az 1.1 → 2.1 → 1.2 → 3.2 sorrendet, a fenti indoklás szerint.
+
+## 7. Admin felület modernizációja — megvalósítási állapot
+
+A felhasználói felület korszerűsítése (lásd a jóváhagyott látványterv-vázlatot) fokozatos, oldalankénti ütemben zajlik, a legkevésbé modern nézettel — Admin > Portfolio — kezdve.
+
+### 7.1. Admin > Portfolio — megvalósult
+
+- **CSS-specificitási stratégia**: az új megjelenés egy különálló, kizárólag az `admin.ejs`-be betöltött, `.modern-ui` osztállyal prefixelt stíluslapban (`public/css/admin-modern.css`) került megvalósításra, a meglévő monolitikus `style.css` módosítása nélkül. Ez biztosítja, hogy a globális elem-szintű szabályok (`a:link`, `button`, `select` stb.) specificitását (0,1,1) az új, kételemű osztály-szelektorok (0,2,0) megbízhatóan felülírják, ugyanakkor a még nem modernizált admin-fülek (amelyek a `body` sötétkék hátterére és a hozzá tartozó világos felirat-színekre támaszkodnak) vizuálisan érintetlenek maradnak.
+- **"Shadow select" minta**: a szűrők (Tissues/Reels/Grammatura) mögött a funkcionális, eredeti `<select>`/`<select multiple>` elemek `display:none`-nal rejtve, de a DOM-ban megmaradva továbbra is léteznek — ezekből olvassa ki változatlanul a "Hozzáadás" gomb kliensoldali logikája a kijelölt értékeket. Az új, checkbox-/rádiógomb-listás felület egy kiegészítő JS-segédfüggvénnyel (`initShadowFilterList()`, `admin.js`) szinkronban tartja a látható és a rejtett elemek állapotát.
+- A táblázat (`#portfolio`), a lapozás és a keresőmezők (`s1`/`s2`/`s3`, `keyup`-eseményre épülő debounce-olt szűrés) funkcionalitása változatlan maradt; kizárólag a megjelenítésük és a kísérő DOM-struktúra frissült.
+
+### 7.2. A tesztelés során feltárt, a redesign-tól független hibák
+
+A fenti implementáció valós böngészőben (Playwright), friss tesztadatbázison végzett, végpontok közötti funkcionális ellenőrzése — a bejelentkezéstől a szűrésen és a "Hozzáadás" funkción át a törlésig — az alábbi, a jelen kódfelülvizsgálatban korábban nem szereplő, **a redesign-tól függetlenül már korábban is fennálló** hibákat tárta fel az `admin.ejs`/`admin.js` "Hozzáadás" logikájában:
+
+- **`ReferenceError: update is not defined`**: a "Hozzáadás" gomb `fetch()`-hívásának sikeres válasz-ágában egy sehol nem definiált `update()` függvény hívása állt. Ez minden — egyébként szerveroldalon sikeres — beszúrás után egy el nem kapott kivételt dobott, amely megszakította a `.then()` ág lefutását: sem a táblázat nem frissült, sem a sikeres mentésről szóló visszajelzés nem jelent meg, helyette hibaüzenetet látott a felhasználó. Javítva: a hívás (és egy mellette álló, sehol fel nem használt `time` változó kiszámítása) törölve.
+- **A tétel-számláló (`#portfolio_nr`) hozzáadás után nem frissült**: a fejlécben megjelenő "Portfolio (N tétel)" számláló kizárólag a szűrés (`filter()`) függvényben lett frissítve, a "Hozzáadás" sikeres lefutása után nem — így egy új sor felvétele után is a régi, eggyel kisebb érték maradt látható mindaddig, amíg a felhasználó nem indított szűrést. Javítva: a számláló frissítése bekerült a "Hozzáadás" sikeres válasz-ágába is.
+
+Mindkét hiba azonosítására és javítására a jelenlegi redesign-kör kliensoldali logikájának (`admin.js` `initShadowFilterList()`) tesztelése közben, a "Hozzáadás" funkció végpontok közötti ellenőrzése során került sor — jó példa arra, hogy egy vizuális modernizáció valós funkcionális teszteléssel kombinálva korábban rejtve maradt, éles hibákat is felszínre hozhat.
+
+Hátralévő ütem: Report, Profile, illetve az ajánlatkérési (RFQ builder) nézet átültetése az elfogadott látványterv szerint.
