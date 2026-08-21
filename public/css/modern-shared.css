@@ -172,6 +172,125 @@
   font-weight: 600;
 }
 
+/* ---- fül-sáv (subnav) ---- */
+
+.modern-ui .subnav {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 0 28px;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  height: 52px;
+  overflow: visible;
+  max-height: none;
+}
+.modern-ui .subnav-tab {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--ink-2);
+  padding: 0;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  border-bottom: 2.5px solid transparent;
+  background: transparent;
+  border-radius: 0;
+  margin: 0;
+  float: none;
+}
+.modern-ui .subnav-tab:hover {
+  background: transparent;
+  color: var(--ink);
+}
+.modern-ui .subnav-tab.active {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+  background: transparent;
+}
+
+/* ---- adattábla-kártya és általános adattábla ----
+   Bármely oldal használhatja: a kártya-keret ".table-card", a
+   tábla maga ".data-table" (a táblák saját "id"-jüket - pl.
+   table#portfolio - a JS-hivatkozások miatt megtartják, de a
+   megjelenésükhöz elég a "data-table" osztályt felvenniük).
+   Oldal-specifikus kiegészítések (pl. Portfolio kijelölő oszlopa,
+   oszloponkénti keresőmezők) a saját oldal moduljában (pl.
+   admin-modern.css) maradnak. ---- */
+
+.modern-ui .table-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.modern-ui .data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  text-align: left;
+}
+/* MEGJEGYZÉS a lenti "!important" kiegészítésekről:
+   a style.css-ben (öröklött, nem ennek a refaktornak a része) az
+   #portfolio, #profile_req, #plie_params stb. ID-szelektorok minden
+   táblához azonos th/td/zebracsíkozást írnak elő (pl.
+   "#portfolio th, #profile_req th, ... { background-color: #04AA6D;
+   color: white; }"). Az ID-szelektor CSS-specificitása mindig
+   magasabb, mint bármennyi osztály-szelektoré, ezért az alábbi,
+   kizárólag osztály-alapú ".modern-ui .data-table th/td" szabályok
+   önmagukban NEM tudnák felülírni ezeket - a táblázat az
+   egyesített nézetben zöld/fehér/félkövér fejléccel jelenne meg. A
+   style.css saját maga is alkalmaz "!important"-ot hasonló
+   helyzetben (lásd ".tab { padding: ... !important }"), ezért az
+   itteni, kizárólag az ütköző tulajdonságokra korlátozott
+   "!important" használat a kódbázis már meglévő konvenciójához
+   igazodik, nem új mintát vezet be. */
+.modern-ui .data-table th {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600 !important;
+  font-size: 11.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3) !important;
+  padding: 10px 18px !important;
+  border-bottom: 1px solid var(--border);
+  background: var(--card) !important;
+  vertical-align: middle;
+  text-align: left !important;
+}
+.modern-ui .data-table td {
+  padding: 11px 18px !important;
+  font-size: 13.5px;
+  color: var(--ink);
+  border-bottom: 1px solid var(--border);
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  vertical-align: middle !important;
+  font-variant-numeric: tabular-nums;
+  text-align: left !important;
+}
+.modern-ui .data-table tbody tr:nth-child(even),
+.modern-ui .data-table tr:nth-child(even),
+.modern-ui .data-table tbody tr:nth-child(odd),
+.modern-ui .data-table tr:nth-child(odd) {
+  background-color: transparent !important;
+}
+.modern-ui .data-table tr:hover td {
+  background: var(--surface);
+}
+.modern-ui .data-table tr:hover {
+  background-color: var(--surface) !important;
+}
+.modern-ui .data-table tr:last-child td {
+  border-bottom: none;
+}
+
 /* ---- általános oldal-váz (tartalmi terület) ---- */
 
 .modern-ui .content {

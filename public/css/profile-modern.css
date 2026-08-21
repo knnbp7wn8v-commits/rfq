@@ -1,0 +1,109 @@
+/* ============================================================
+   Profile felület - modern UI
+   ============================================================
+   A közös alapréteg (design tokenek, felső navigáció, fül-sáv,
+   gomb-/adattábla-alapok) a modern-shared.css-ben található,
+   amelyet a profile.ejs ennél a fájlnál korábban tölt be - ez a
+   fájl azt egészíti ki a Profile oldalra jellemző elemekkel
+   (adatlap-kártyák, mező-rács). A ".modern-ui" osztály-előtag
+   indoklása az admin-modern.css fejlécében olvasható.
+
+   FONTOS: a "Cégadatok"/"Szállítási cím" mezők a látványtervben
+   statikus, csak megjelenítő dobozként szerepelnek, a valóságban
+   viszont a "Update" gomb kliensoldali logikája (profile_update())
+   ezen mezők .value-jából olvassa ki a módosított adatokat - ezért
+   ezek VALÓDI, szerkeszthető <input> elemek maradtak, csak a
+   látványterv statikus dobozainak megfelelően lettek újrastílusozva
+   (keret, háttér, lekerekítés a natív beviteli mező kinézete
+   helyett).
+   ============================================================ */
+
+/* A megosztott .content (modern-shared.css) alapból oszlop-irányú
+   flexbox, elemek egymás alá rendezéséhez (pl. Report oldal). A
+   Profile oldalon egyetlen, középre igazítandó hasábról van szó,
+   ezért itt sor-irányúra váltjuk, hogy a justify-content:center
+   vízszintesen (nem függőlegesen) középre rendezze a .profile-wrap-ot. */
+.modern-ui .content.profile-content {
+  flex-direction: row;
+  justify-content: center;
+}
+.modern-ui .profile-wrap {
+  width: 100%;
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.modern-ui .card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.modern-ui .card-title {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 14.5px;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.modern-ui .card-title svg {
+  width: 17px;
+  height: 17px;
+  color: var(--accent);
+  flex: 0 0 auto;
+}
+
+.modern-ui .grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.modern-ui .field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.modern-ui .field.full {
+  grid-column: 1 / -1;
+}
+.modern-ui .field label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-3);
+}
+
+/* A profil-mezők valódi <input> elemek, csak a látványterv statikus
+   dobozainak megfelelően stílusozva - lásd a fájl fejlécét. */
+.modern-ui .field input[type="text"],
+.modern-ui .field input[type="email"] {
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--border-2);
+  border-radius: 8px;
+  padding: 10px 13px;
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--surface);
+}
+.modern-ui .field input[type="text"]:focus,
+.modern-ui .field input[type="email"]:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--card);
+}
+.modern-ui .field input::placeholder {
+  color: var(--ink-3);
+}
+
+.modern-ui .actions {
+  display: flex;
+  justify-content: flex-end;
+}

@@ -5,139 +5,173 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="css/style.css" />
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+    <link rel="stylesheet" type="text/css" href="css/modern-shared.css" />
+    <link rel="stylesheet" type="text/css" href="css/profile-modern.css" />
     <title>Request for Order</title>
     <script src="assets/scripts/common.js"></script>
-    <style>
-        select {
-            height: auto !important;
-        }
-        input {
-            width: 300px;
-            height: 24pt;
-        }
-    </style>
 </head>
 
 <body>
 <div class="wrapper">
-<div class="menu">
-    <span><a href="protected">Home</a></span>
-    <span><a href="profile">Profile</a></span>
-    <% if (data[0].rows[0].role_id==3 ) { %>
-        <span><a href="report">Report</a></span>
-    <% } else if (data[0].rows[0].role_id==2) { %>
-        <span><a href="report">Report</a></span>
-    <% } %>
-
-
-    <% if (data[0].rows[0].role_id==3) { %>
-        <span><a href="admin">Admin</a></span>
-    <% } else { %>
-
-    <% } %>
+<div class="menu modern-ui">
+    <div class="topnav">
+        <div class="topnav-left">
+            <div class="brand">
+                <svg class="brand-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="9"></circle>
+                    <circle cx="12" cy="12" r="4"></circle>
+                </svg>
+                <span class="brand-name">RFQ</span>
+            </div>
+            <nav class="nav-links">
+                <a class="nav-link" href="protected">Home</a>
+                <a class="nav-link active" href="profile">Profile</a>
+                <% if (data[0].rows[0].role_id==3 ) { %>
+                    <a class="nav-link" href="report">Report</a>
+                <% } else if (data[0].rows[0].role_id==2) { %>
+                    <a class="nav-link" href="report">Report</a>
+                <% } %>
+                <% if (data[0].rows[0].role_id==3) { %>
+                    <a class="nav-link" href="admin">Admin</a>
+                <% } %>
+            </nav>
+        </div>
+        <div class="topnav-right">
+            <div class="user-chip">
+                <span class="avatar"><%= (data[0].rows[0].customer_name || '?').trim().charAt(0).toUpperCase() %></span>
+                <span class="user-name" id="name">Welcome back: <strong><%= data[0].rows[0].customer_name %></strong></span>
+            </div>
+        </div>
+    </div>
 </div>
-<div class="tab">
-    <button class="tablinks" onclick="openTab(event, 'Overview')">Overview</button>
-    <button class="tablinks" onclick="openTab(event, 'Requests')">Requests</button>
-    <span id="name">Welcome back: <%= data[0].rows[0].customer_name %></span>
+<div class="tab modern-ui">
+    <div class="subnav">
+        <button class="tablinks subnav-tab active" onclick="openTab(event, 'Overview')">Overview</button>
+        <button class="tablinks subnav-tab" onclick="openTab(event, 'Requests')">Requests</button>
+    </div>
 </div>
-<div id="Overview" class="tabcontent" style="display: flex !important; flex-direction: column">
-    <h1>Profile</h1>
-    <table>
-        <tbody>
-        <tr>
-            <td class="label">Company Name:</td>
-            <td><input id="p1" type="text" value="<%= data[0].rows[0].customer_name %>" /></td>
-        </tr>
-        <tr>
-            <td class="label">VAT number:</td>
-            <td><input id="p2" type="text" value="<%= data[0].rows[0].vat_number %>" /></td>
-        </tr>
-        <tr>
-            <td class="label">Contact Name:</td>
-            <td><input id="p3" type="text" value="<%= data[0].rows[0].contact_name %>" /></td>
-        </tr>
-        <tr>
-            <td class="label">Email:</td>
-            <td><input id="p4" type="email" value="<%= data[0].rows[0].email %>" /></td>
-        </tr>
-        <tr>
-            <td class="label">Phone Number:</td>
-            <td><input id="p5" type="text" value="<%= data[0].rows[0].phone %>" /></td>
-        </tr>
-        <tr>
-            <td class="label">Country:</td>
-            <% if (data[1].rows[0]) { %>
-            <td><input id="p6" type="text" value="<%= data[1].rows[0].country %>" /></td>
-            <% } else { %>
-                <td><input id="p6" type="text" value="" /></td>
-            <% } %>
-        </tr>
-        <tr>
-            <td class="label">City:</td>
-            <% if (data[1].rows[0]) { %>
-            <td><input id="p7" type="text" value="<%= data[1].rows[0].city %>" /></td>
-            <% } else { %>
-            <td><input id="p7" type="text" value="" /></td>
-            <% } %>
-        </tr>
-        <tr>
-            <td class="label">Postal codes:</td>
-            <% if (data[1].rows[0]) { %>
-            <td><input id="p8" type="text" value="<%= data[1].rows[0].postal_code %>" /></td>
-            <% } else { %>
-                <td><input id="p8" type="text" value="" /></td>
-            <% } %>
-        </tr>
-        <tr>
-            <td class="label">Address:</td>
-            <% if (data[1].rows[0]) { %>
-            <td><input id="p9" type="text" value="<%= data[1].rows[0].address %>" /></td>
-            <% } else { %>
-            <td><input id="p9" type="text" value="" /></td>
-            <% } %>
-        </tr>
-        </tbody>
-    </table>
-    <button id="update" type="button" style="width: 200px" onclick="profile_update(<%= data[0].rows[0].customer_id%>) %>">Update</button>
+<div id="Overview" class="tabcontent modern-ui content profile-content" style="display: flex !important;">
+    <div class="profile-wrap">
+        <div class="page-head">
+            <h1>Profile</h1>
+            <p>Cégadatok és kapcsolattartási információk</p>
+        </div>
+
+        <div class="card">
+            <div class="card-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V7l9-4 9 4v14"></path><path d="M9 21v-6h6v6"></path><path d="M9 9h.01M15 9h.01M9 13h.01M15 13h.01"></path></svg>
+                Cégadatok
+            </div>
+            <div class="grid">
+                <div class="field">
+                    <label for="p1">Company Name</label>
+                    <input id="p1" type="text" value="<%= data[0].rows[0].customer_name %>" />
+                </div>
+                <div class="field">
+                    <label for="p2">VAT number</label>
+                    <input id="p2" type="text" value="<%= data[0].rows[0].vat_number %>" />
+                </div>
+                <div class="field">
+                    <label for="p3">Contact Name</label>
+                    <input id="p3" type="text" value="<%= data[0].rows[0].contact_name %>" />
+                </div>
+                <div class="field">
+                    <label for="p4">Email</label>
+                    <input id="p4" type="email" value="<%= data[0].rows[0].email %>" />
+                </div>
+                <div class="field">
+                    <label for="p5">Phone Number</label>
+                    <input id="p5" type="text" value="<%= data[0].rows[0].phone %>" />
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                Szállítási cím
+            </div>
+            <div class="grid">
+                <div class="field">
+                    <label for="p6">Country</label>
+                    <% if (data[1].rows[0]) { %>
+                    <input id="p6" type="text" value="<%= data[1].rows[0].country %>" placeholder="Nincs megadva" />
+                    <% } else { %>
+                    <input id="p6" type="text" value="" placeholder="Nincs megadva" />
+                    <% } %>
+                </div>
+                <div class="field">
+                    <label for="p7">City</label>
+                    <% if (data[1].rows[0]) { %>
+                    <input id="p7" type="text" value="<%= data[1].rows[0].city %>" placeholder="Nincs megadva" />
+                    <% } else { %>
+                    <input id="p7" type="text" value="" placeholder="Nincs megadva" />
+                    <% } %>
+                </div>
+                <div class="field">
+                    <label for="p8">Postal codes</label>
+                    <% if (data[1].rows[0]) { %>
+                    <input id="p8" type="text" value="<%= data[1].rows[0].postal_code %>" placeholder="Nincs megadva" />
+                    <% } else { %>
+                    <input id="p8" type="text" value="" placeholder="Nincs megadva" />
+                    <% } %>
+                </div>
+                <div class="field full">
+                    <label for="p9">Address</label>
+                    <% if (data[1].rows[0]) { %>
+                    <input id="p9" type="text" value="<%= data[1].rows[0].address %>" placeholder="Nincs megadva" />
+                    <% } else { %>
+                    <input id="p9" type="text" value="" placeholder="Nincs megadva" />
+                    <% } %>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button id="update" class="btn-primary" type="button" onclick="profile_update(<%= data[0].rows[0].customer_id %>)">Update</button>
+        </div>
+    </div>
 </div>
-<div id="Requests" class="tabcontent">
-    <table id="profile_req">
-        <tbody>
-        <tr>
-            <th>Tissue</th>
-            <th>Plies</th>
-            <th>Grammatura</th>
-            <th>Diameter</th>
-            <th>Reels</th>
-            <th>Quotatient</th>
-            <th>Ordered Weight</th>
-            <th>Ediameter</th>
-            <th>Certification</th>
-            <th>Requested Week Number</th>
-            <th>Comment</th>
-            <th>Requested Date
-            </th>
-        </tr>
-        <% data[2].rows.forEach(function(pr) { %>
-        <tr>
-            <td><%= pr.tissue %></td>
-            <td><%= pr.plies %></td>
-            <td><%= pr.grammatura %></td>
-            <td><%= pr.diameter %></td>
-            <td><%= pr.reels %></td>
-            <td><%= pr.quotatient %></td>
-            <td><%= pr.orderweight %></td>
-            <td><%= pr.ediameter %></td>
-            <td><%= pr.cerification %></td>
-            <td><%= pr.weeknum %></td>
-            <td><%= pr._comment %></td>
-            <td><%= pr.requestdate.toLocaleDateString('hu-HU', { year: 'numeric' , month: '2-digit' ,
-                    day: '2-digit' }); %></td>
-        </tr>
-        <% }); %>
-        </tbody>
-    </table>
+<div id="Requests" class="tabcontent modern-ui content">
+    <div class="table-card">
+        <table id="profile_req" class="data-table">
+            <tbody>
+            <tr>
+                <th>Tissue</th>
+                <th>Plies</th>
+                <th>Grammatura</th>
+                <th>Diameter</th>
+                <th>Reels</th>
+                <th>Quotatient</th>
+                <th>Ordered Weight</th>
+                <th>Ediameter</th>
+                <th>Certification</th>
+                <th>Requested Week Number</th>
+                <th>Comment</th>
+                <th>Requested Date
+                </th>
+            </tr>
+            <% data[2].rows.forEach(function(pr) { %>
+            <tr>
+                <td><%= pr.tissue %></td>
+                <td><%= pr.plies %></td>
+                <td><%= pr.grammatura %></td>
+                <td><%= pr.diameter %></td>
+                <td><%= pr.reels %></td>
+                <td><%= pr.quotatient %></td>
+                <td><%= pr.orderweight %></td>
+                <td><%= pr.ediameter %></td>
+                <td><%= pr.cerification %></td>
+                <td><%= pr.weeknum %></td>
+                <td><%= pr._comment %></td>
+                <td><%= pr.requestdate.toLocaleDateString('hu-HU', { year: 'numeric' , month: '2-digit' ,
+                        day: '2-digit' }); %></td>
+            </tr>
+            <% }); %>
+            </tbody>
+        </table>
+    </div>
 </div>
 <div id="message" class="message"></div>
 </div>

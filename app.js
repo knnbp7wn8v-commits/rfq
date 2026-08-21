@@ -246,29 +246,52 @@ async function updateUser(data) {
     throw new Error('Database error during user update');
   }
 }
+// Megjegyzés: ez a függvény korábban KIZÁRÓLAG az addresses táblát
+// frissítette/töltötte fel - a cégadat-mezőket (company/vat/c_name/
+// email/phone, a Profile oldal "Cégadatok" kártyája) a hívó egyáltalán
+// nem írta vissza a customers táblába, miközben a kliens mind a
+// kilenc mezőt elküldte, és a UI sikeres mentést jelzett. A Profile
+// oldal redesign-jának végpontok közötti tesztelése tárta fel: a
+// Company Name / VAT / Contact Name / Email / Phone mezők
+// szerkesztése és mentése látszólag sikeresen lezajlott, a customers
+// tábla tartalma azonban változatlan maradt. Javítva: a függvény
+// mostantól mindkét táblát frissíti, és saját maga futtatja le a
+// lekérdezéseket (a korábbi {query, values} visszaadás helyett),
+// mivel egynél több lekérdezésre van szükség.
 async function updateProfile(data) {
-  const q = "SELECT * FROM addresses WHERE u_id = $1";
-  const v = [data.id];
   try {
-    const r = await pool.query(q,v);
+    await pool.query(
+      `UPDATE customers SET customer_name = $1, vat_number = $2, contact_name = $3, email = $4, phone = $5 WHERE customer_id = $6`,
+      [data.company, data.vat, data.c_name, data.email, data.phone, data.id]
+    );
+
+    const q = "SELECT * FROM addresses WHERE u_id = $1";
+    const v = [data.id];
+    const r = await pool.query(q, v);
     if (r.rows.length > 0) {
-      let query = "";
-      let values = [];
-      query = `UPDATE addresses SET country = $1, city = $2, postal_code = $3, address = $4 WHERE u_id = $5`;
-      values = [data.country, data.city, data.postal, data.address, data.id];
-      return {query, values, status: 'updated'};
+      await pool.query(
+        `UPDATE addresses SET country = $1, city = $2, postal_code = $3, address = $4 WHERE u_id = $5`,
+        [data.country, data.city, data.postal, data.address, data.id]
+      );
+      return { status: 'updated' };
     } else {
-      let query = "";
-      let values = [];
-      query = `INSERT INTO addresses (u_id, country, city, postal_code, address) VALUES ($1, $2, $3, $4, $5);`;
-      values = [data.id, data.country, data.city, data.postal, data.address];
-      return {query, values, status: 'inserted' };
+      await pool.query(
+        `INSERT INTO addresses (u_id, country, city, postal_code, address) VALUES ($1, $2, $3, $4, $5);`,
+        [data.id, data.country, data.city, data.postal, data.address]
+      );
+      return { status: 'inserted' };
     }
   } catch (err) {
+    if (err.code === '23505') {
+      // Egyedi kényszer sérülése - jelenleg egyedül a customers.email
+      // UNIQUE INDEX (004_customers_email_unique.sql) jöhet szóba: a
+      // felhasználó egy már foglalt e-mail címre próbálta módosítani
+      // a sajátját.
+      return { error: 'duplicate_email' };
+    }
     logger.error('Error updating profile:', err);
     return { error: 'database_error' };
   }
-
 }
 
 // Felhasználók listázása funkció
@@ -360,15 +383,17 @@ app.post('/users', async (req, res) => {
       // A profilját csak a saját bejelentkezett felhasználó módosíthatja -
       // a kliens által küldött id-t figyelmen kívül hagyjuk (IDOR elleni védelem).
       const profileData = { ...data, id: req.user.customer_id };
-      const { query, values, status, error } = await updateProfile(profileData);
+      const { status, error } = await updateProfile(profileData);
+      if (error === 'duplicate_email') {
+        return res.status(409).send({ message: 'Ez az e-mail cím már foglalt.', status: 'error' });
+      }
       if (error) {
         return res.status(500).send({ message: 'Database error', status: 'error' });
       }
-      const result = await pool.query(query, values);
       if (status === 'updated') {
-        res.status(200).send({ data: result.rows, message: 'Profile updated successfully', status: 'success' });
+        res.status(200).send({ message: 'Profile updated successfully', status: 'success' });
       } else if (status === 'inserted') {
-        res.status(201).send({ data: result.rows, message: 'Profile created successfully', status: 'success' });
+        res.status(201).send({ message: 'Profile created successfully', status: 'success' });
       }
     } else {
       res.status(400).send({ message: 'Unknown request type' });
