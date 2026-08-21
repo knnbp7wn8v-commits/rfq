@@ -61,7 +61,13 @@ function requestforquote() {
         .then(checkResponse)
         .then(data => {
             Logger.info('Kosárba helyezés sikeres:', data.message);
-            document.getElementById("requestsnr").innerHTML = data.counter
+            document.getElementById("requestsnr").innerHTML = data.counter;
+            updateSendButtonState();
+            // Az összegző oldalsáv mostantól mindig látható (nem csak
+            // kattintásra betöltött lista), ezért új tétel felvétele után
+            // azonnal frissítjük is a tartalmát - korábban ez csak a
+            // fejlécben lévő "Requests: N" feliratra kattintva történt meg.
+            listrequest();
         })
         .catch(error => {
             Logger.error('Kosárba helyezés sikertelen:', error);
@@ -109,8 +115,28 @@ function createFieldRow(labelText, value, extraValueClass) {
 function renderlist(cartlist) {
     let ele2 = document.getElementById("requestsDiv")
     ele2.innerHTML = "";
+    if (!cartlist || cartlist.length === 0) {
+        // Üres kosár esetén a jóváhagyott látványterv szerinti "üres
+        // állapot" jelenik meg lista helyett.
+        const emptyIcon = createDiv('');
+        emptyIcon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path><rect x="9" y="3" width="6" height="4" rx="1"></rect></svg>';
+        const emptyText = createSpan('', '', 'A hozzáadott termékek itt jelennek meg');
+        const emptyState = createDiv('summaryEmptyState', '', emptyIcon, emptyText);
+        emptyState.className = 'summary-empty';
+        ele2.appendChild(emptyState);
+        return;
+    }
     cartlist.forEach((item) => {
-        let div = createDiv(item.cartid + "-div", "listrequestdiv")
+        // createDiv(id, style, ...children) második paramétere valójában
+        // inline "style" attribútumot állít be, nem CSS-osztályt - a
+        // korábbi createDiv(id, "listrequestdiv") hívás emiatt egy
+        // érvénytelen style="listrequestdiv" attribútumot hozott létre,
+        // a class="listrequestdiv" helyett soha nem került rá a
+        // kosártétel-dobozra, így a style.css .listrequestdiv szabálya
+        // (és most a modern-shared/rfq-modern.css stílusa sem) sosem
+        // érvényesült rajta. Javítva: className explicit beállítása.
+        let div = createDiv(item.cartid + "-div");
+        div.className = "listrequestdiv";
         let lbl1 = createFieldRow("Tissue: ", item.tissue);
         lbl1.className = "reqestslbl";
         let lbl2 = createFieldRow("Plies: ", item.plies);
@@ -206,6 +232,7 @@ function removefromcart(cartid) {
         .then(checkResponse)
         .then(data => {
             document.getElementById("requestsnr").innerHTML = data.counter;
+            updateSendButtonState();
             listrequest();
         })
         .catch(error => {
@@ -352,6 +379,8 @@ async function sendtheemail() {
                                 .catch(error => Logger.error('A kosár ürítése a küldés után sikertelen:', error));
                             showMessage('Your request has been sent!', 'success');
                             document.getElementById("requestsnr").innerHTML = "0";
+                            updateSendButtonState();
+                            listrequest();
                             document.getElementById('Tissue').value = "Select"
                             const parentDiv = document.getElementById('form');
                             const elementToKeep = document.getElementById('tissueDiv');

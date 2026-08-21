@@ -23,6 +23,12 @@
    Profile oldalon egyetlen, középre igazítandó hasábról van szó,
    ezért itt sor-irányúra váltjuk, hogy a justify-content:center
    vízszintesen (nem függőlegesen) középre rendezze a .profile-wrap-ot. */
+/* A ".modern-ui .content" leszármazott-kombinátoros szelektor csak akkor
+   illeszkedik, ha a két osztály KÜLÖNBÖZŐ elemen van - a Profile oldalon
+   viszont mindhárom osztály (modern-ui/content/profile-content)
+   ugyanazon a <div id="Overview">-n szerepel. Lásd a részletes
+   magyarázatot modern-shared.css "általános oldal-váz" szakaszában. */
+.modern-ui.content.profile-content,
 .modern-ui .content.profile-content {
   flex-direction: row;
   justify-content: center;

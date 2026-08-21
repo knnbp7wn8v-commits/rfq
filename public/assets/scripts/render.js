@@ -68,6 +68,7 @@ function createButton(id, text, onclick = '', type) {
     return button;
 }
 const orderBut = createButton('orderBut', 'Add to request', 'requestforquote()', 'button');
+orderBut.className = "btn btn-outline";
 addEvent(orderBut, "click", () => requestforquote());
 document.body.appendChild(orderBut);
 
@@ -76,22 +77,64 @@ function addEvent(element, eventType, handler) {
 }
 
 const body = document.body;
+// A modern felülethez a "Products"/"Address" lépés-kártyák az #rfqSteps,
+// a "Requests" összegző panel az #rfqSummary oszlopba kerül (lásd
+// index.ejs) - a korábbi verzióban minden elem közvetlenül a body-hoz
+// lett hozzáfűzve. A kaszkádoló kiválasztási logika (tissue_select_id
+// stb.) és minden elem-azonosító változatlan maradt, ezért ez a
+// átszervezés a JS-vezérlést nem érinti.
+const stepsCol = document.getElementById('rfqSteps');
+const summaryCol = document.getElementById('rfqSummary');
 
-const orderDivHeadTitle = createSpan("orderDivHeadTitle", "divTitle", "Products");
-const orderDivHead = createDiv("orderDivHead", "cursor: pointer;", orderDivHeadTitle);
+// A készítő által megadott, fix SVG-jelölés beillesztése - nem
+// felhasználói/adatbázisból származó string, ezért az innerHTML
+// használata itt biztonságos (lásd kod_atvilagitas_kliens.md, 1.1 pont).
+function iconify(el, svgMarkup) {
+    el.innerHTML = svgMarkup;
+    return el;
+}
+const ICON_PRODUCTS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>';
+const ICON_ADDRESS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>';
+
+function createStepTitle(num, text, iconMarkup) {
+    const stepNum = createSpan('', 'step-num', String(num));
+    const h2 = createElement('h2', {}, text);
+    const icon = iconify(createDiv(''), iconMarkup);
+    const head = createDiv('', '', stepNum, h2, icon);
+    head.className = 'step-title';
+    return head;
+}
+
+const orderDivHead = createStepTitle(1, 'Products', ICON_PRODUCTS);
+orderDivHead.id = 'orderDivHead';
 addEvent(orderDivHead, "click", () => collapse(orderDivHead.id));
 
-const addressDivTitle = createSpan("addressDivTitle", "divTitle", "Address");
-const addressDivHead = createDiv("addressDivHead", "cursor: pointer;", addressDivTitle);
+const addressDivHead = createStepTitle(2, 'Address', ICON_ADDRESS);
+addressDivHead.id = 'addressDivHead';
 addEvent(addressDivHead, "click", () => collapse(addressDivHead.id));
 
-const requestsDivHeadTitle = createSpan("requestsDivHeadTitle", "divTitle", "Requests");
-const requestDivHead = createDiv("requestsDivHead", "cursor: pointer;", requestsDivHeadTitle);
-addEvent(requestDivHead, "click", () => collapse(requestDivHead.id));
+// A "Requests" összegző panel fejléce - a Products/Address lépésekkel
+// ellentétben ez nem összecsukható (lásd cart.js listrequest()): a
+// jóváhagyott látványterv szerint ez egy állandóan látható, ragadós
+// oldalsáv, ezért nincs collapse()-eseménykezelője.
+const requestsDivHeadTitle = createElement('h2', {}, 'Requests');
+const requestsCountBadge = createSpan('requestsnr', 'summary-count', '0');
+const requestDivHead = createDiv('requestsDivHead', '', requestsDivHeadTitle, requestsCountBadge);
+requestDivHead.className = 'summary-head';
 
 const addressDiv = createDiv("addressDiv", "display:none");
+addressDiv.className = 'card-body';
 const orderDiv = createDiv("orderDiv", "display:block");
-const requestsDiv = createDiv("requestsDiv", "display:none");
+orderDiv.className = 'card-body';
+const requestsDiv = createDiv("requestsDiv", "display:block");
+requestsDiv.className = 'summary-list';
+
+const orderCard = createDiv('orderCard', '', orderDivHead, orderDiv);
+orderCard.className = 'card';
+const addressCard = createDiv('addressCard', '', addressDivHead, addressDiv);
+addressCard.className = 'card';
+const summaryCard = createDiv('summaryCard', '', requestDivHead, requestsDiv);
+summaryCard.className = 'summary-card';
 
 // Repeat for other elements as needed
 
@@ -99,6 +142,7 @@ const requestsDiv = createDiv("requestsDiv", "display:none");
 
 
 const parityDiv = createDiv("parityDiv");
+parityDiv.className = 'field-group';
 const parityTag = createLabel("", "Parity", "labelclass");
 const parity1lbl = createLabel("parity1", "EXW");
 const parity2lbl = createLabel("parity2", "DAP");
@@ -134,6 +178,7 @@ const delivery1 = createDiv("delivery1");
 delivery1.classList.add("delivery1_class");
 const delivery2 = createDiv("delivery2");
 delivery2.classList.add("delivery2_class");
+delivery2.classList.add("field-group");
 const d1_label = createLabel("", "Delivery Address");
 delivery1.appendChild(d1_label);
 const d2_label = createLabel("", createSpan("", "", "Country:"));
@@ -158,6 +203,7 @@ addressDiv.appendChild(delivery2);
 ///////////***************Company***********/
 
 const companyDiv = createDiv("companyDiv");
+companyDiv.className = 'field-group';
 const companyTag = createLabel("", "Company Details")
 companyTag.classList.add("labelclass");
 const c1 = createLabel("", createSpan("", "", "Name:"));
@@ -190,6 +236,7 @@ companyDiv.appendChild(createBr());
 addressDiv.appendChild(companyDiv);
 
 var paymentDiv = createDiv("paymentDiv");
+paymentDiv.className = 'field-group';
 var paymentTag = createLabel("paymentTag", "", "labelclass");
 var p1_0 = createLabel("p1_0", createSpan("", "", "Payment term:"), "");
 var p0_l = createLabel("p0_l", createSpan("", "", " "), "dummylabel");
@@ -235,20 +282,30 @@ addressDiv.appendChild(paymentDiv);
 
 ///////////******************email********************//////////
 
-var emailDiv = createDiv("emailDiv", "display:block");
-//emailDiv.setAttribute("style", "display:block");
+var emailDiv = createDiv("emailDiv", "");
 var sendemail = createButton("sendEmail", "Send request in email");
+sendemail.className = "btn btn-primary btn-full";
 sendemail.onclick = function() {
     sendtheemail();
 }
 emailDiv.appendChild(sendemail);
-body.appendChild(orderDivHead);
-body.appendChild(orderDiv);
-body.appendChild(addressDivHead);
-body.appendChild(addressDiv);
-body.appendChild(requestDivHead);
-body.appendChild(requestsDiv);
-body.appendChild(emailDiv);
+summaryCard.appendChild(emailDiv);
+
+if (stepsCol && summaryCol) {
+    stepsCol.appendChild(orderCard);
+    stepsCol.appendChild(addressCard);
+    summaryCol.appendChild(summaryCard);
+} else {
+    // Visszaesés a korábbi, közvetlenül a body-hoz fűzött elrendezésre,
+    // ha az #rfqSteps/#rfqSummary konténerek valamiért hiányoznának.
+    body.appendChild(orderCard);
+    body.appendChild(addressCard);
+    body.appendChild(summaryCard);
+}
+// A kosár tartalmát induláskor is megjelenítjük az összegző panelen
+// (korábban csak a fejlécben lévő, külön "Requests: N" elemre kattintva
+// töltődött be a lista) - lásd cart.js listrequest()/renderlist().
+listrequest();
 
 // Define your collapse function here
 function collapse(id) {
@@ -282,9 +339,11 @@ var matchedTdsId = null;
 const ediameterWeightMap = new Map();
 //const form = createForm('formId', 'form-style-1', 'submit', 'post');
 const form = createDiv("form");
+form.className = 'fields-stack';
 orderDiv.appendChild(form);
 orderDiv.appendChild(orderBut);
 const tissueDiv = createDiv('tissueDiv');
+tissueDiv.className = 'field';
 const tissueLabel = createLabel('tissuelbl', 'Tissues', 'labelclass');
 const tissueSelect = createSelect('Tissue');
 renderoptions("Tissue", "");
@@ -296,11 +355,27 @@ const optionsData = ['Option1', 'Option2']; // Example options data
 //});
 
 tissueDiv.appendChild(tissueLabel);
-tissueDiv.appendChild(createBr());
 tissueDiv.appendChild(tissueSelect);
 
 // Append to form or another container
 form.appendChild(tissueDiv);
+
+// A "Send request in email" gomb vizuálisan (és funkcionálisan) letiltott
+// állapotba kerül, amíg a kosár üres - korábban a gomb mindig aktívnak
+// tűnt, üres kosár mellett kattintva viszont a sendtheemail() belső
+// "requestsnr > 0" feltétele miatt észrevétlenül nem történt semmi. Ezt a
+// segédfüggvényt mindenhol meghívjuk, ahol a kosár darabszáma változik.
+function updateSendButtonState() {
+    const countEl = document.getElementById("requestsnr");
+    const btn = document.getElementById("sendEmail");
+    if (!countEl || !btn) {
+        return;
+    }
+    const count = Number(countEl.textContent || countEl.innerHTML) || 0;
+    btn.disabled = count === 0;
+    btn.classList.toggle("btn-disabled", count === 0);
+    btn.classList.toggle("btn-primary", count > 0);
+}
 
 async function rendercustomer() {
     try {
@@ -313,6 +388,7 @@ async function rendercustomer() {
         document.getElementById("c4_in").value = data.data[0].email;
         document.getElementById("c5_in").value = data.data[0].phone;
         document.getElementById("requestsnr").innerHTML = data.data2[0].count;
+        updateSendButtonState();
     } catch (error) {
         Logger.error('Ügyféladatok betöltése sikertelen:', error);
         showMessage('Failed to load your customer details. Please reload the page.', 'error');
@@ -378,6 +454,7 @@ function removeOptions(selectElement) {
 
 function renderSelects(name, where) {
     const div = createDiv(name + 'Div');
+    div.className = 'field';
     const label = createLabel(name + 'Tag', name, 'labelclass');
     const select = createSelect(name);
     //const optionsData = ['Option1', 'Option2']; // Example options data
@@ -387,7 +464,6 @@ function renderSelects(name, where) {
     //});
     select.setAttribute("onchange", name + "_select_id()");
     div.appendChild(label);
-    div.appendChild(createBr());
     div.appendChild(select);
     form.appendChild(div);
     removeOptions(document.getElementById(name));
@@ -467,6 +543,7 @@ function Reels_select_id() {
     quotatient = Math.floor(280 / h);
     p = h * quotatient;
     const reelsTag2Div = createDiv('reelsTag2Div');
+    reelsTag2Div.className = 'prompt-box';
     const reelsTag2 = createElement('label', { id: 'reelsTag2' },
         "Number of reels are in one pack: " + quotatient,
         createBr(),
@@ -475,14 +552,17 @@ function Reels_select_id() {
         "Is it passable?"
     );
     const b1 = createButton('b1', 'Yes', 'yes()', 'button');
+    b1.className = "btn btn-primary";
     addEvent(b1, "click", () => yes());
     const b2 = createButton('b2', 'no', 'no()', 'button');
+    b2.className = "btn btn-outline";
     addEvent(b2, "click", () => no());
+    const reelsTag2Buttons = createDiv('', '', b2, b1);
+    reelsTag2Buttons.className = 'button-row';
     reelsTag2Div.appendChild(createBr());
     reelsTag2Div.appendChild(reelsTag2);
     reelsTag2Div.appendChild(createBr());
-    reelsTag2Div.appendChild(b2);
-    reelsTag2Div.appendChild(b1);
+    reelsTag2Div.appendChild(reelsTag2Buttons);
     document.getElementById("ReelsDiv").appendChild(reelsTag2Div);
 }
 
@@ -504,6 +584,7 @@ function no() {
     b1.textContent = "Set";
     b1.setAttribute("id", "b3");
     b1.setAttribute("type", "button");
+    b1.className = "btn btn-primary";
     b1.onclick = function () {
         set();
     }
@@ -582,14 +663,26 @@ function Ediameter_select_id(selectobject) {
         createBr()
     );
     label.className = "lblweight";
+    // A "No" gomb korábban ugyanazt az id="b4" azonosítót kapta, mint a
+    // "Yes" gomb (feltehetően másolás-beillesztési hiba) - érvénytelen,
+    // duplikált HTML id-t eredményezve. A kattintás-eseménykezelők
+    // (addEvent) a DOM-elem-referenciára, nem az id-re épülnek, ezért ez
+    // egérrel kattintva nem okozott hibás viselkedést, de bármely
+    // id-alapú hivatkozás (pl. teszt-automatizálás, kisegítő lehetőségek)
+    // a két gomb közül a DOM-ban elsőként szereplőt (a "No" gombot)
+    // találta volna meg "b4" néven. Javítva: saját, egyedi id.
     const b4 = createButton('b4', 'Yes', '', 'button');
+    b4.className = "btn btn-primary";
     addEvent(b4, "click", () => weightyes());
-    const b5 = createButton('b4', 'No', '', 'button');
+    const b5 = createButton('b5', 'No', '', 'button');
+    b5.className = "btn btn-outline";
     addEvent(b5, "click", () => weightno());
+    const weightButtons = createDiv('', '', b5, b4);
+    weightButtons.className = 'button-row';
     const div = createDiv("weightDiv");
+    div.className = 'prompt-box';
     div.appendChild(label);
-    div.appendChild(b5);
-    div.appendChild(b4);
+    div.appendChild(weightButtons);
     form.appendChild(div);
 }
 
@@ -612,11 +705,15 @@ function weightno() {
     );
     label.className = "lblweight";
     const b6 = createButton('b6', 'Yes', '', 'button');
+    b6.className = "btn btn-primary";
     addEvent(b6, "click", () => weight_2nd_yes());
     const b7 = createButton('b7', 'No', '', 'button');
+    b7.className = "btn btn-outline";
     addEvent(b7, "click", () => weight_2nd_no());
     const div2 = createDiv("buttonDiv");
+    div2.className = 'button-row';
     const div = createDiv("weightDiv");
+    div.className = 'prompt-box';
     div.appendChild(label);
     div2.appendChild(b7);
     div2.appendChild(b6);
@@ -677,8 +774,10 @@ function weightyes() {
         selectthis(this.id);
     }
     const div = createDiv("certDiv");
+    div.className = 'prompt-box';
     const tds_div = createDiv("tds_div");
     const orderWeightDiv = createDiv("orderWeightDiv");
+    orderWeightDiv.className = 'field';
     const label = createLabel("orderWeightlbl", "Needs in ton: ");
     const orderWeightNum = createInput("input", "orderWeightNum");
     orderWeightNum.onkeyup = function () {
@@ -814,6 +913,7 @@ function set_orderweight() {
     } else {
         TotalWeight_calc();
         const div = createDiv("truckDiv");
+        div.className = 'prompt-box';
         const label = createLabel("trucklbl", "Expected number of trucks: " + totalTrucks);
         div.appendChild(label);
         form.appendChild(div);
@@ -835,6 +935,7 @@ function TotalWeight_calc() {
 
 function requested_week() {
     const div = createDiv("weekDiv");
+    div.className = 'field';
     const label = createLabel("weeklbl", "Requested week of transport");
     const weekNum = createInput("input", "weekNum");
     weekNum.onkeypress = function () {

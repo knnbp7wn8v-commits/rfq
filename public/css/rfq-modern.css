@@ -1,0 +1,390 @@
+/* ============================================================
+   RFQ builder (Home / "Request for quotation") - modern UI
+   ============================================================
+   A közös alapréteg (design tokenek, felső navigáció, gomb- és
+   jelölőnégyzet-alapstílusok) a modern-shared.css-ben található,
+   amelyet az index.ejs ennél a fájlnál korábban tölt be - ez a
+   fájl azt egészíti ki az RFQ builder oldalra jellemző elemekkel.
+
+   FONTOS: ezen az oldalon - a másik három oldaltól eltérően - a
+   teljes tartalom (a lépésenkénti termékválasztó kaszkád és a
+   kosár-összegzés) nem statikus EJS-jelöléssel, hanem kliensoldali
+   JavaScript-tel (public/assets/scripts/render.js, cart.js) épül
+   fel futásidőben, document.createElement()-alapú segédfüggvényeken
+   keresztül. A jelen redesign ezért nem csak CSS-t, hanem a
+   render.js/cart.js néhány, kizárólag a létrehozott elemek
+   szülő-konténerét és osztálynevét érintő, célzott kiegészítését is
+   tartalmazza - a kaszkádoló kiválasztási logika (tissue_select_id,
+   Ediameter_select_id stb.), minden elem-azonosító és minden
+   kattintás-eseménykezelő funkcionálisan változatlan maradt.
+
+   A ".modern-ui" osztály-előtag indoklása az admin-modern.css
+   fejlécében olvasható.
+   ============================================================ */
+
+/* Az oldal tartalma egyetlen, középre igazított hasábban jelenik meg -
+   a Profile oldalon már bevezetett mintát követve (lásd
+   profile-modern.css fejléce). A ".modern-ui.content.rfq-content" (nincs
+   szóköz) forma is szükséges, mivel mindhárom osztály ugyanazon a
+   <div id="rfqApp">-n szerepel - lásd a részletes magyarázatot
+   modern-shared.css "általános oldal-váz" szakaszában. */
+.modern-ui.content.rfq-content,
+.modern-ui .content.rfq-content {
+  flex-direction: row;
+  justify-content: center;
+}
+.modern-ui .wrap {
+  width: 100%;
+  max-width: 1040px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* ---- két hasábos elrendezés: lépés-kártyák + ragadós kosár-összegzés ---- */
+
+.modern-ui .layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 20px;
+  align-items: start;
+}
+.modern-ui .steps {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ---- lépés-kártyák (Products / Address) ---- */
+
+.modern-ui .card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.modern-ui .step-title {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  cursor: pointer;
+}
+.modern-ui .step-num {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--accent-tint);
+  color: var(--accent-hover);
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 12.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+.modern-ui .step-title h2 {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--ink);
+}
+.modern-ui .step-title > div:last-child {
+  margin-left: auto;
+  flex: 0 0 auto;
+  display: flex;
+}
+.modern-ui .step-title > div:last-child svg {
+  width: 17px;
+  height: 17px;
+  color: var(--ink-3);
+}
+.modern-ui .card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ---- mezők (Tissues/Plies/... kaszkád, Requested week stb.) ---- */
+
+.modern-ui .fields-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.modern-ui .field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 360px;
+}
+
+/* A "Parity"/"Delivery Address"/"Company Details"/"Payment term" blokkok
+   (parityDiv/delivery2/companyDiv/paymentDiv) belső felépítése a régi
+   kódban <br> soremelésekkel tagolt, egy sorba rendezett
+   jelölőnégyzet+címke párokra épül - ezt szándékosan nem alakítottuk
+   flexbox-elrendezésre (ami szétválasztaná a jelölőnégyzetet a hozzá
+   tartozó címkétől), csak elválasztó kártya-szegéllyel és térközzel
+   egészítettük ki. */
+.modern-ui .field-group {
+  padding-top: 14px;
+  margin-top: 4px;
+  border-top: 1px solid var(--border);
+}
+.modern-ui .field-group:first-child {
+  padding-top: 0;
+  margin-top: 0;
+  border-top: none;
+}
+
+/* ---- kaszkád-közbeni figyelmeztető/megerősítő dobozok
+   (reelsTag2Div, weightDiv, certDiv, truckDiv) ---- */
+
+.modern-ui .prompt-box {
+  background: var(--accent-tint);
+  border: 1px solid var(--accent-tint-strong);
+  border-radius: 10px;
+  padding: 16px 18px;
+}
+.modern-ui .prompt-box label {
+  color: var(--ink);
+}
+.modern-ui .lblweight {
+  float: none;
+  margin-right: 0;
+}
+.modern-ui .button-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* ---- címke-stílusok ---- */
+
+.modern-ui .labelclass {
+  display: block;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 2px;
+}
+.modern-ui label {
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  font-weight: 400;
+  font-size: 13.5px;
+  color: var(--ink);
+  line-height: 1.8;
+}
+
+/* ---- legördülők ---- */
+/* A style.css-ben lévő, elem-szintű "select{width:100%;max-width:350px;
+   height:35px;}" és a hasonló, kombinált input/select-szabály
+   specificitása alacsonyabb, mint a jelen, két osztályt tartalmazó
+   szelektoré, ezért itt nincs szükség "!important"-ra. */
+.modern-ui select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 100%;
+  max-width: 320px;
+  height: auto;
+  border: 1px solid var(--border-2);
+  border-radius: 8px;
+  padding: 10px 34px 10px 13px;
+  background-color: var(--surface);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2362748e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 14px;
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  font-size: 13.5px;
+  color: var(--ink);
+  margin: 0;
+}
+.modern-ui select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* ---- szöveges/szám mezők ----
+   A style.css-ben néhány ilyen mező méretét ID-szelektor írja felül
+   (pl. "#companyDiv input{height:15px;width:300px}",
+   ".delivery2_class input{height:15px;width:300px}") - az ID-szelektor
+   specificitása mindig magasabb bármennyi osztály-szelektorénál (lásd
+   modern-shared.css hasonló megjegyzését a táblázat-stílusoknál), ezért
+   itt célzottan, csak a méretre vonatkozó tulajdonságokra korlátozva
+   "!important"-ot alkalmazunk. */
+.modern-ui input[type="text"],
+.modern-ui input[type="number"] {
+  width: 100% !important;
+  max-width: 320px;
+  height: auto !important;
+  border: 1px solid var(--border-2);
+  border-radius: 8px;
+  padding: 9px 12px !important;
+  background: var(--surface);
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  font-size: 13.5px;
+  color: var(--ink);
+  margin: 2px 0;
+}
+.modern-ui input[type="text"]:focus,
+.modern-ui input[type="number"]:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--card);
+}
+
+/* ---- gombok ---- */
+
+.modern-ui .btn-outline {
+  background: var(--card);
+  color: var(--accent);
+  border-color: var(--accent-tint-strong);
+}
+.modern-ui .btn-outline:hover {
+  background: var(--accent-tint);
+}
+.modern-ui .btn-full {
+  width: 100%;
+  justify-content: center;
+}
+.modern-ui .btn-disabled,
+.modern-ui .btn-disabled:hover,
+.modern-ui button:disabled,
+.modern-ui button:disabled:hover {
+  background: var(--border);
+  color: var(--ink-3);
+  cursor: not-allowed;
+}
+/* A style.css "#emailDiv button{float:left;margin:...}" és
+   "#orderBut{float:left;margin:...;clear:both}" ID-szelektoros
+   szabályai felülírnák a gombok elrendezését - lásd a fenti
+   megjegyzést az ID-szelektorok specificitásáról. */
+.modern-ui #emailDiv button,
+.modern-ui #orderBut {
+  float: none !important;
+  clear: none !important;
+  margin: 0 !important;
+}
+
+/* ---- kosár-összegző oldalsáv (Requests) ---- */
+
+.modern-ui .summary-card {
+  position: sticky;
+  top: 20px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 22px 22px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.modern-ui .summary-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.modern-ui .summary-head h2 {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--ink);
+}
+.modern-ui .summary-count {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-3);
+  background: var(--surface);
+  padding: 3px 10px;
+  border-radius: 100px;
+}
+/* A style.css "#requestsDiv" ID-szelektorral sötétkék hátteret és
+   világos szöveget ad a kosár-listának ("#requestsDiv{background-
+   color:#0a5e9d;color:#ececec;...}") - ID-szelektorként ez különben
+   felülírná az itteni, osztály-alapú szabályt. */
+.modern-ui #requestsDiv,
+.modern-ui .summary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: 440px;
+  overflow-y: auto;
+  background: transparent !important;
+  color: var(--ink) !important;
+  margin: 0 !important;
+  font: inherit !important;
+}
+.modern-ui .summary-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 28px 10px;
+  color: var(--ink-3);
+  text-align: center;
+}
+.modern-ui .summary-empty svg {
+  width: 26px;
+  height: 26px;
+  color: var(--border-2);
+}
+.modern-ui .summary-empty span {
+  font-size: 13px;
+}
+
+/* A kosártétel-sorok (cart.js renderlist()) már meglévő osztályneveinek
+   (listrequestdiv/requestlbl/requestspan/requestvaluespan/remdiv/
+   remdivspan) modern megjelenése - a kliensoldali JS-logikát nem
+   érintettük, csak ezeket az eredeti osztályneveket stílusozzuk. */
+.modern-ui .listrequestdiv {
+  width: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  /* A jobb felső sarokban abszolút pozícionált "REMOVE" feliratnak
+     (lásd .remdiv lent) külön sort hagyunk a doboz tetején, hogy ne
+     fedje át az első mező (Tissue) sorát. */
+  padding: 34px 14px 12px;
+  position: relative;
+  font-size: 12.5px;
+}
+.modern-ui .requestspan {
+  display: inline-block;
+  width: auto;
+  min-width: 108px;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+.modern-ui .requestvaluespan {
+  color: var(--ink);
+  font-weight: 600;
+}
+.modern-ui .remdiv {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  font: 600 11px 'Poppins', sans-serif;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  cursor: pointer;
+  margin-left: 0;
+}
+.modern-ui .remdiv:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+}
+.modern-ui .tds_comment {
+  display: block;
+  width: auto;
+  margin-left: 0;
+  margin-top: 4px;
+  text-align: left;
+}

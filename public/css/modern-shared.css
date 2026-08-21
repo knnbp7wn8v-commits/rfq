@@ -291,8 +291,20 @@
   border-bottom: none;
 }
 
-/* ---- általános oldal-váz (tartalmi terület) ---- */
-
+/* ---- általános oldal-váz (tartalmi terület) ----
+   MEGJEGYZÉS: a ".modern-ui .content" (szóköz = leszármazott-
+   kombinátor) csak akkor illeszkedik, ha a ".content" osztályú elem a
+   ".modern-ui" osztályú elem VALÓDI leszármazottja - vagyis nem
+   illeszkedik, ha mindkét osztály UGYANAZON az elemen szerepel (pl.
+   "<div class=\"tabcontent modern-ui content\">", ahogy azt a Report és
+   a Profile oldal, illetve az RFQ builder is használja). Emiatt ez a
+   szabály (és a page-head/page-head p folytatása) korábban ezeken az
+   oldalakon egyáltalán nem érvényesült - a ".content" elem külső
+   térköze/háttere hiányzott, csak a benne lévő, ténylegesen
+   leszármazott kártya-elemek (pl. ".card", ".table-card") kaptak
+   stílust. Javítva: a szelektor mindkét esetet (azonos elem is,
+   leszármazott is) lefedi. */
+.modern-ui.content,
 .modern-ui .content {
   padding: 28px;
   display: flex;
