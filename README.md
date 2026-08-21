@@ -114,11 +114,14 @@ adatbázison (pl. éles AWS RDS) az alkalmazás felismeri, hogy a séma már
 létezik, és a `001_init.sql`-t nem futtatja újra - csak az azt követő
 migrációkat alkalmazza.
 
-A séma előállítása után az alábbi ún. lookup (törzsadat) táblák
-feltöltése szükséges ahhoz, hogy az ajánlatkérési folyamat választási
-lépései (legördülő listák) működjenek: `diameter`, `eheight`, `grammatura`,
-`plies`, `reels`, `tissue`, `truck`, `weight`, `plie_param`, `ediam_param`,
-`portfolio`, `permissionsets`, `roles`.
+A `permissionsets` és `roles` táblákat - mivel tartalmuk nem üzleti adat,
+hanem az alkalmazás logikájába kódolt, rögzített referenciaadat
+(`app.js`: `ROLES.ADMIN`) - a migráció automatikusan feltölti
+(`db/migrations/009_seed_roles.sql`). Az alábbi további lookup (törzsadat)
+táblák kézi feltöltése szükséges ahhoz, hogy az ajánlatkérési folyamat
+választási lépései (legördülő listák) működjenek: `diameter`, `eheight`,
+`grammatura`, `plies`, `reels`, `tissue`, `truck`, `weight`, `plie_param`,
+`ediam_param`, `portfolio`.
 
 ### Az első admin fiók létrehozása (telepítő varázsló)
 

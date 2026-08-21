@@ -125,7 +125,10 @@ function renderlist(cartlist) {
         lbl6.className = "requestlbl";
         let lbl7 = createFieldRow("Core height: ", item.ediameter);
         lbl7.className = "requestlbl";
-        let lbl8 = createFieldRow("Certification needed: ", item.certification);
+        // A certification oszlop az adatbázisban boolean (lásd
+        // db/migrations/008_certification_boolean.sql) - "yes"/"no" feliratra
+        // alakítva jelenítjük meg, hogy a korábbi megjelenés ne változzon.
+        let lbl8 = createFieldRow("Certification needed: ", item.certification ? "yes" : "no");
         lbl8.className = "requestlbl";
         let lbl9 = createFieldRow("Requested weight: ", item.orderweight);
         lbl9.className = "requestlbl";
@@ -312,7 +315,7 @@ async function sendtheemail() {
                             '<br><lbl><span style="display: inline-block;width: 180px;">Reels: </span><span>' + escapeHtml(item.reels) + '</span></lbl>' +
                             '<br><lbl><span style="display: inline-block;width: 180px;">Nr. the reels in 1 pack: </span><span>' + escapeHtml(item.quotatient) + '</span></lbl>' +
                             '<br><lbl><span style="display: inline-block;width: 180px;">Core height: </span><span>' + escapeHtml(item.ediameter) + '</span></lbl>' +
-                            '<br><lbl><span style="display: inline-block;width: 180px;">Certification needed: </span><span>' + escapeHtml(item.certification) + '</span></lbl>' +
+                            '<br><lbl><span style="display: inline-block;width: 180px;">Certification needed: </span><span>' + escapeHtml(item.certification ? "yes" : "no") + '</span></lbl>' +
                             '<br><lbl><span style="display: inline-block;width: 180px;">Requested weight: </span><span>' + escapeHtml(item.orderweight) + ' ton(s)</span></lbl>' +
                             '<br><lbl><span style="display: inline-block;width: 180px;">Requested week: </span><span>' + escapeHtml(item.weeknum) + '</span></lbl><br></div></div>';
                         mailbody += html;

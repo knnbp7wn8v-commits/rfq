@@ -150,8 +150,13 @@
                 }));
                 createWeeklyBarChart(parsedData, svg, margin, width, height);
             } else if (chart === "chart4") { // Kördiagram a tanúsítványokhoz
+                // A certification oszlop az adatbázisban boolean (lásd
+                // db/migrations/008_certification_boolean.sql) - itt alakítjuk
+                // vissza "yes"/"no" felirattá a diagram feliratozásához, hogy a
+                // korábbi megjelenés ("yes"/"no", nem "true"/"false") ne
+                // változzon.
                 parsedData = data.map(d => ({
-                    certification: d.certification,
+                    certification: d.certification ? 'yes' : 'no',
                     totalQuantity: Number(d.totalquantity)
                 }));
                 createPieChart(parsedData, svg, width, height);
